@@ -42,6 +42,8 @@ class FCCNetwork(nn.Module):
         # shapes of all dimensions after the 0th dim
         
         #num_filters = [24,48,48]
+        
+        print(type(self.num_filters))
 
         for i in range(self.num_layers):
             self.layer_dict['fcc_{}'.format(i)] = nn.Linear(in_features=out.shape[1],  # initialize a fcc layer
@@ -121,8 +123,11 @@ class ConvolutionalNetwork(nn.Module):
         
         #num_filters = [24,48,48]
         
+        print(self.num_filters[0])
+        
         # torch.nn.Conv2d(in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True)
         for i in range(self.num_layers):  # for number of layers times
+            
             self.layer_dict['conv_{}'.format(i)] = nn.Conv2d(in_channels=out.shape[1],
                                                              # add a conv layer in the module dict
                                                              kernel_size=5,

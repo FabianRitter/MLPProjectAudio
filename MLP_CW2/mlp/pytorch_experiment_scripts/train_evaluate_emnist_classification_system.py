@@ -13,12 +13,13 @@ args = get_args()  # get arguments from command line
 rng = np.random.RandomState(seed=args.seed)  # set the seeds for the experiment
 torch.manual_seed(seed=args.seed) # sets pytorch's seed
 
+num_filters = [int(filt) for filt in args.num_filters[0].split(",")]
 
-train_data = data_providers.AudioDataProvider('train', batch_size=args.batch_size,
+train_data = data_providers.EMNISTDataProvider('train', batch_size=args.batch_size,
                                                rng=rng)  # initialize our rngs using the argument set seed
-val_data = data_providers.AudioDataProvider('train', batch_size=args.batch_size,
+val_data = data_providers.EMNISTDataProvider('train', batch_size=args.batch_size,
                                              rng=rng)  # initialize our rngs using the argument set seed
-test_data = data_providers.AudioDataProvider('test', batch_size=args.batch_size,
+test_data = data_providers.EMNISTDataProvider('test', batch_size=args.batch_size,
                                               rng=rng)  # initialize our rngs using the argument set seed
 
 
@@ -26,7 +27,7 @@ test_data = data_providers.AudioDataProvider('test', batch_size=args.batch_size,
 custom_conv_net = ConvolutionalNetwork(  # initialize our network object, in this case a ConvNet
     input_shape=(args.batch_size, args.image_num_channels, args.image_height, args.image_width),
     dim_reduction_type=args.dim_reduction_type,
-    num_output_classes=train_data.num_classes, num_filters=args.num_filters_per_layer, num_layers=args.num_layers, use_bias=False)
+    num_output_classes=train_data.num_classes, num_filters=num_filters, num_layers=args.num_layers, use_bias=False)
 
 conv_experiment = ExperimentBuilder(network_model=custom_conv_net,
                                     experiment_name=args.experiment_name,
