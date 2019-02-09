@@ -243,9 +243,9 @@ class AudioDataProvider(DataProvider):
         
         inputs = inputs.astype(np.float32)
         if flatten:
-            inputs = np.reshape(inputs, newshape=(-1, 96*100))
+            inputs = np.reshape(inputs, newshape=(-1, 96*6400))
         else:
-            inputs = np.reshape(inputs, newshape=(-1, 1, 96, 100))
+            inputs = np.reshape(inputs, newshape=(-1, 1, 96, 6400))
         # pass the loaded data to the parent class __init__
         super(AudioDataProvider, self).__init__(
             inputs, targets, batch_size, max_num_batches, shuffle_order, rng)
