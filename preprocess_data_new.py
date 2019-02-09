@@ -99,22 +99,24 @@ def normalize_amplitude(y, tolerance=0.005):
     return y / max_value
 
 
-
+fname2= fname[:100]
 
 processes = []
 
-#all_inputs = np.zeros([len(fname),n_mels,number_of_frames])
-all_inputs= []
-all_targets = np.zeros(len(fname))
-all_manually = np.zeros(len(fname))
-all_noisy_small = np.zeros(len(fname))
+print(len(fname2))
+
+all_inputs = np.zeros([len(fname2),n_mels*number_of_frames])
+#all_inputs= []
+all_targets = np.zeros(len(fname2))
+#all_manually = np.zeros(len(fname))
+#all_noisy_small = np.zeros(len(fname))
 all_dict = {}
-#all_inputs = [convert2mel(audio,base_path) for audio in fname]                      
-all_inputs.append([convert2mel(audio,base_path) for audio in fname])
-np.asarray(all_inputs, dtype=np.float32)
+all_inputs = [convert2mel(audio,base_path) for audio in fname2]                      
+#all_inputs.append([convert2mel(audio,base_path) for audio in fname])
+#np.asarray(all_inputs, dtype=np.float32)
 all_dict['inputs'] = all_inputs
 all_dict['targets'] =  df_train['label']
-all_dict['manually_verified'] = df_train['manually_verified']
-all_dict['noisy_small'] = df_train['noisy_small']
+#all_dict['manually_verified'] = df_train['manually_verified']
+#all_dict['noisy_small'] = df_train['noisy_small']
 
 np.savez('processed_data-train.npz',**all_dict)
