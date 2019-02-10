@@ -1,6 +1,7 @@
 import pickle
 import os
 import csv
+import datetime
 
 
 def save_to_stats_pkl_file(experiment_log_filepath, filename, stats_dict):
@@ -45,6 +46,17 @@ def save_statistics(experiment_log_dir, filename, stats_dict, current_epoch, sav
             writer.writerow(row_to_add)
 
     return summary_filename
+
+def save_parameters(experiment_name,args):
+
+    now = datetime.datetime.now()
+    
+    file_name = str(experiment_name) + str(now) + '.txt'
+    f = open(file_name,'w')
+    f.write(str(args))
+
+    f.close()    
+        
 
 
 def load_statistics(experiment_log_dir, filename):
