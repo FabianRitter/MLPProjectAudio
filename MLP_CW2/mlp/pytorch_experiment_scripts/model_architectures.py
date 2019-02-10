@@ -40,10 +40,14 @@ class FCCNetwork(nn.Module):
         out = out.view(out.shape[0], -1)
                          # flatten inputs to shape (b, -1) where -1 is the dim resulting from multiplying the
         # shapes of all dimensions after the 0th dim
+        
+        #num_filters = [24,48,48]
+        
+        print(type(self.num_filters))
 
         for i in range(self.num_layers):
             self.layer_dict['fcc_{}'.format(i)] = nn.Linear(in_features=out.shape[1],  # initialize a fcc layer
-                                                            out_features=self.num_filters,
+                                                            out_features=self.num_filters[i],
                                                             bias=self.use_bias)
 
             out = self.layer_dict['fcc_{}'.format(i)](out)  # apply ith fcc layer to the previous layers outputs
@@ -85,7 +89,7 @@ class FCCNetwork(nn.Module):
 
 
 class ConvolutionalNetwork(nn.Module):
-    def __init__(self, input_shape, dim_reduction_type, num_output_classes, num_filters, num_layers, use_bias=False):
+    def __init__(self, input_shape, dim_reduction_type, num_output_classes, num_filters, num_layers,kernel_size, use_bias=False):
         """
         Initializes a convolutional network module object.
         :param input_shape: The shape of the inputs going in to the network.
@@ -102,6 +106,7 @@ class ConvolutionalNetwork(nn.Module):
         self.num_output_classes = num_output_classes
         self.use_bias = use_bias
         self.num_layers = num_layers
+        self.kernel_size = kernel_size
         self.dim_reduction_type = dim_reduction_type
         # initialize a module dict, which is effectively a dictionary that can collect layers and integrate them into pytorch
         self.layer_dict = nn.ModuleDict()
@@ -116,12 +121,16 @@ class ConvolutionalNetwork(nn.Module):
         x = torch.zeros((self.input_shape))  # create dummy inputs to be used to infer shapes of layers
 
         out = x
+        
+        
+        
         # torch.nn.Conv2d(in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True)
         for i in range(self.num_layers):  # for number of layers times
+            
             self.layer_dict['conv_{}'.format(i)] = nn.Conv2d(in_channels=out.shape[1],
                                                              # add a conv layer in the module dict
-                                                             kernel_size=3,
-                                                             out_channels=self.num_filters, padding=1,
+                                                             kernel_size=self.kernel_size,
+                                                             out_channels=self.num_filters[i], padding=1,
                                                              bias=self.use_bias)
 
             out = self.layer_dict['conv_{}'.format(i)](out)  # use layer on inputs to get an output
@@ -150,7 +159,7 @@ class ConvolutionalNetwork(nn.Module):
                 out = F.relu(out)  # apply relu on output
 
             elif self.dim_reduction_type == 'max_pooling':
-                self.layer_dict['dim_reduction_max_pool_{}'.format(i)] = nn.MaxPool2d(2, padding=1)
+                self.layer_dict['dim_reduction_max_pool_{}'.format(i)] = nn.MaxPool2d((4,2), padding=1)
                 out = self.layer_dict['dim_reduction_max_pool_{}'.format(i)](out)
 
             elif self.dim_reduction_type == 'avg_pooling':

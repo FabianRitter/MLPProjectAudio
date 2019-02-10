@@ -26,11 +26,15 @@ def get_args():
     parser.add_argument('--image_width', nargs="?", type=int, default=28, help='Width of image data')
     parser.add_argument('--dim_reduction_type', nargs="?", type=str, default='strided_convolution',
                         help='One of [strided_convolution, dilated_convolution, max_pooling, avg_pooling]')
-    parser.add_argument('--num_layers', nargs="?", type=int, default=4,
+    parser.add_argument('--num_layers', nargs="?", type=int, default=3,
                         help='Number of convolutional layers in the network (excluding '
                              'dimensionality reduction layers)')
-    parser.add_argument('--num_filters', nargs="?", type=int, default=64,
-                        help='Number of convolutional filters per convolutional layer in the network (excluding '
+    #parser.add_argument('--num_filters', nargs="?", type=int, default=64,
+    #                    help='Number of convolutional filters per convolutional layer in the network (excluding '
+    #                         'dimensionality reduction layers)')
+    parser.add_argument('--num_filters', nargs='+',help='Number of convolutional filters per convolutional layer in the network                         (excluding dimensionality reduction layers)')    
+    parser.add_argument('--kernel_size', nargs="?", type=int, default=3,
+                        help='Number of convolutional layers in the network (excluding '
                              'dimensionality reduction layers)')
     parser.add_argument('--num_epochs', nargs="?", type=int, default=100, help='The experiment\'s epoch budget')
     parser.add_argument('--experiment_name', nargs="?", type=str, default="exp_1",
