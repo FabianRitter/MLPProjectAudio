@@ -1,0 +1,3 @@
+ctrl:
+  dataset_path: '../../real_data/'
+  type_training: 'test'
