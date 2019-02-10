@@ -18,8 +18,8 @@ parser = argparse.ArgumentParser(description='Code for DCASE Challenge task 2.')
 parser.add_argument('-p','--params',dest='params_preprocessing',action='store',
                         required=False,type=str)
 
-parser.add_argument('-e','--expnum',dest='experiment_number', action='store',
-                        required=False,type=int)
+#parser.add_argument('-e','--expnum',dest='experiment_number', action='store',
+              #          required=False,type=int)
 
 
 args = parser.parse_args()
@@ -38,26 +38,26 @@ else:
     path_to_metadata = '../../real_data/FSDnoisy18k.meta/train.csv'
     base_path = '../../real_data/FSDnoisy18k.audio_train'
 
-if args.experiment_number:
-    experiment_number= args.experiment_number
-else:
-    experiment_number = False
+#if args.experiment_number:
+ #   experiment_number= args.experiment_number
+#else:
+ #   experiment_number = False
 
 
 
 df_train = pd.read_csv(path_to_metadata)
 fname = df_train['fname'].values
 
-if experiment_number and type_training == "train":
-    if experiment_number == 176:
-        fname = fname[100 * (experiment_number-1):]
-    fname = fname[100 * (experiment_number-1): 100 * experiment_number]
-    print("the length of fname is", len(fname))
-else:
-	if experiment_number == 10:
-		fname = fname[100 * (experiment_number-1):]
-	fname = fname[100 * (experiment_number-1): 100 * experiment_number]
-	print('using {0} files for testing data'.format(len(fname)))
+#if experiment_number and type_training == "train":
+ #   if experiment_number == 176:
+  #      fname = fname[100 * (experiment_number-1):]
+   # fname = fname[100 * (experiment_number-1): 100 * experiment_number]
+    #print("the length of fname is", len(fname))
+#else:
+#	if experiment_number == 10:
+#		fname = fname[100 * (experiment_number-1):]
+#	fname = fname[100 * (experiment_number-1): 100 * experiment_number]
+#	print('using {0} files for testing data'.format(len(fname)))
 
 
 
@@ -102,7 +102,7 @@ def normalize_mel_histogram(mel_hist, number_of_frames=100):
     else:
         return mel_hist
     
-def convert2mel(audio,base_path,fs,fmax,n_mels,number_of_frames):
+def convert2mel(audio,base_path,fs,fmax,n_mels,number_of_frames, contador):
     """
     Convert raw audio to mel spectrogram
     """
@@ -112,7 +112,7 @@ def convert2mel(audio,base_path,fs,fmax,n_mels,number_of_frames):
     # Resample if the source_fs is different from expected
     if fs != source_fs:
         data = librosa.core.resample(data, source_fs,fs)
-        print('Resampling to %d: %s' % (fs, base_path) )
+        #print('Resampling to %d: %s' % (fs, base_path) )
     ### extracted from Eduardo Fonseca Code, it seems there are 3 audio corrupted so we need to check length
     
     if len(data) > 0 :
@@ -122,6 +122,8 @@ def convert2mel(audio,base_path,fs,fmax,n_mels,number_of_frames):
         data = np.ones((number_of_frames, 1))
         print('File corrupted. Could not open: %s' % path)
     
+    if contador % 100:
+        print("contador")
     #data = np.reshape(data, [-1, 1])        
     
     ## shor time processing of audio #####
@@ -148,7 +150,14 @@ def normalize_amplitude(y, tolerance=0.005):
 processes = []
 
 
-all_inputs = np.zeros([len(fname),n_mels*number_of_frames])
+#all_inputs = np.zeros([len(fname),n_mels*number_of_frames])
+#if experiment_number == 1:
+hdf5_store = h5py.File("processed_data_train.hdf5", "w")
+#else:
+ #   hdf5_store = h5py.File("processed_data_train.hdf5", "a")
+
+
+all_inputs = hdf5_store.create_dataset("all_inputs", (len(fname),n_mels*number_of_frames), compression="gzip")
 
 all_targets = np.zeros(len(fname))
 
@@ -157,17 +166,27 @@ if type_training == 'train':
     all_noisy_small = np.zeros(len(fname))
 
 all_dict = {}
-all_inputs = [convert2mel(audio,base_path,fs,fmax,n_mels,number_of_frames) for audio in fname]                      
-all_dict['inputs'] = all_inputs
+all_inputs = [convert2mel(audio,base_path,fs,fmax,n_mels,number_of_frames,ii) for ii,audio in enumerate(fname)]                      
+#all_dict['inputs'] = all_inputs
 all_dict['targets'] =  df_train['label']
 
+targets = hdf5_store.create_dataset("targets", data = df_train['label'], compression="gzip")
+
+
+
+
 if type_training == 'train':
-    all_dict['manually_verified'] = df_train['manually_verified']
-    all_dict['noisy_small'] = df_train['noisy_small']
+    #all_dict['manually_verified'] = df_train['manually_verified']
+    #all_dict['noisy_small'] = df_train['noisy_small']
+    manually_verified = hdf5_store.create_dataset("manually_verified", data = df_train['manually_verified'], compression="gzip")
+    noisy_small =  hdf5_store.create_dataset("noisy_small", data = df_train['noisy_small'], compression="gzip")
 
 if experiment_number:
     print("saving data for experiment" , experiment_number)
-    path_hdd = "/media/fabian/Seagate Expansion Drive/MLP_EXPERIMENTS/"
-    np.savez(path_hdd + 'TestData/processed_data-test-{' + str(experiment_number) + "}.npz",**all_dict)
+    #path_hdd = "/media/fabian/Seagate Expansion Drive/MLP_EXPERIMENTS/"
+    #np.savez(path_hdd + 'TestData/processed_data-test-{' + str(experiment_number) + "}.npz",**all_dict)
+
+hdf5_store.close()
+
 
 
