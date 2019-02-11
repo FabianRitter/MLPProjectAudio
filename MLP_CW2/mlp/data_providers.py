@@ -9,6 +9,8 @@ import pickle
 import gzip
 import numpy as np
 import os
+import h5py
+import pandas as pd
 from mlp import DEFAULT_SEED
 
 
@@ -297,24 +299,29 @@ class AudioDataProvider(DataProvider):
         # construct path to data using os.path.join to ensure the correct path
         # separator for the current platform / OS is used
         # MLP_DATA_DIR environment variable should point to the data directory
-        first_path = os.path.abspath("/home/fabian/Dropbox/FabianCloud/MscAI/SecondSemester/MLP Second Semester/PersonalRepo/MLPProjectAudio/MLP_CW2/data")
-        data_path = os.path.join(first_path, 'processed_data-{0}.npz'.format(which_set))
+        first_path = os.path.abspath("/home/jordi/mlp_audio/MLPProjectAudio/MLP_CW2/data")
+        data_path = os.path.join(first_path, 'processed_data_{0}.hdf5'.format(which_set))
         #data_path = os.path.join(
         #    os.environ['MLP_DATA_DIR'], 'processed_data-{0}.npz'.format(which_set))
         assert os.path.isfile(data_path), (
             'Data file does not exist at expected path: ' + data_path
         )
         # load data from compressed numpy file
-        loaded = np.load(data_path)
-        print(loaded.keys())
-        inputs, targets = loaded['inputs'], loaded['targets']
-        
+        loaded = h5py.File(data_path, 'r')
+        #inputs, targets = loaded['inputs'], loaded['targets']
+        inputs = loaded['all_inputs']
+        inputs = inputs[:100]
         
         inputs = inputs.astype(np.float32)
+        ####Temporal solution
+        data_path_labels = os.path.join(first_path, 'train.csv')
+        df = pd.read_csv(data_path_labels)
+        targets = df['label'].values
+        targets = targets[:100]
         if flatten:
-            inputs = np.reshape(inputs, newshape=(-1, 96*6400))
+            inputs = np.reshape(inputs, newshape=(-1, 64*32000))
         else:
-            inputs = np.reshape(inputs, newshape=(-1, 1, 96, 6400))
+            inputs = np.reshape(inputs, newshape=(-1, 1, 64, 32000))
         # pass the loaded data to the parent class __init__
         super(AudioDataProvider, self).__init__(
             inputs, targets, batch_size, max_num_batches, shuffle_order, rng)
@@ -350,7 +357,6 @@ class AudioDataProvider(DataProvider):
         one_of_k_targets = np.zeros((targets_int.shape[0], self.num_classes))
         one_of_k_targets[range(targets_int.shape[0]),targets_int] = 1
         return one_of_k_targets
-
 
 class MetOfficeDataProvider(DataProvider):
     """South Scotland Met Office weather data provider."""
