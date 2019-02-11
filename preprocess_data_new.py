@@ -48,20 +48,6 @@ else:
 df_train = pd.read_csv(path_to_metadata)
 fname = df_train['fname'].values
 
-#if experiment_number and type_training == "train":
- #   if experiment_number == 176:
-  #      fname = fname[100 * (experiment_number-1):]
-   # fname = fname[100 * (experiment_number-1): 100 * experiment_number]
-    #print("the length of fname is", len(fname))
-#else:
-#	if experiment_number == 10:
-#		fname = fname[100 * (experiment_number-1):]
-#	fname = fname[100 * (experiment_number-1): 100 * experiment_number]
-#	print('using {0} files for testing data'.format(len(fname)))
-
-
-
-
 n_mels = 64
 win_length_samples = 512
 fs= 16000 # we will make downsampling to save some data!!44100
@@ -102,10 +88,13 @@ def normalize_mel_histogram(mel_hist, number_of_frames=100):
     else:
         return mel_hist
     
-def convert2mel(audio,base_path,fs,fmax,n_mels,number_of_frames, contador):
+def convert2mel(audio,base_path,fs,fmax,n_mels,number_of_frames, counter):
     """
     Convert raw audio to mel spectrogram
     """
+    if counter % 100:
+        print("Clips processed:",counter)
+        
     path = os.path.join(base_path, audio)
     data, source_fs = soundfile.read(file=path)
     data = data.T
@@ -121,13 +110,6 @@ def convert2mel(audio,base_path,fs,fmax,n_mels,number_of_frames, contador):
         ###### tenemos que ver como borrar estos audios! 
         data = np.ones((number_of_frames, 1))
         print('File corrupted. Could not open: %s' % path)
-    
-    if contador % 100:
-        print("contador")
-    #data = np.reshape(data, [-1, 1])        
-    
-    ## shor time processing of audio #####
-
     
     mels = melspectrogram(y=data, sr=fs,
                             n_fft=2048, hop_length=hop_length_samples,
