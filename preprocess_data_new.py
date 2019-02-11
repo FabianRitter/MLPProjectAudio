@@ -148,7 +148,7 @@ processes = []
 
 #all_inputs = np.zeros([len(fname),n_mels*number_of_frames])
 if experiment_number == 1:
-    hdf5_store = h5py.File("processed_data_train.hdf5", "w")
+    hdf5_store = h5py.File("processed_data_test.hdf5", "w")
     #all_inputs = hdf5_store.create_dataset("all_inputs-batch-" + experiment_number, (len(df_train['fname'].values),n_mels*number_of_frames), compression="gzip")
     all_inputs = hdf5_store.create_dataset("all_inputs" , (len(df_train['fname'].values),n_mels*number_of_frames), compression="gzip")  
     targets = hdf5_store.create_dataset("targets", data = df_train['label'], compression="gzip")
@@ -157,7 +157,7 @@ if experiment_number == 1:
         manually_verified = hdf5_store.create_dataset("manually_verified", data = df_train['manually_verified'], compression="gzip")
         noisy_small =  hdf5_store.create_dataset("noisy_small", data = df_train['noisy_small'], compression="gzip")
 else:
-    hdf5_store = h5py.File("processed_data_train.hdf5", "a")
+    hdf5_store = h5py.File("processed_data_test.hdf5", "a")
     #all_inputs = hdf5_store.create_dataset("all_inputs-batch-" + experiment_number, (len(fname),n_mels*number_of_frames), compression="gzip")
     #all_inputs = hdf5_store.create_dataset("all_inputs-batch-" + experiment_number, (len(fname),n_mels*number_of_frames), compression="gzip")
 
