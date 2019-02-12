@@ -1,3 +1,5 @@
 ctrl:
   dataset_path: '../../real_data/'
-  type_training: 'test'
+  type_training: 'train'
+  chunk_size: '64'
+
