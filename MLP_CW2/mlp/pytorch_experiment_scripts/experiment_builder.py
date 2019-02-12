@@ -157,7 +157,7 @@ class ExperimentBuilder(nn.Module):
             epoch_start_time = time.time()
             current_epoch_losses = {"train_acc": [], "train_loss": [], "val_acc": [], "val_loss": []}
 
-            with tqdm.tqdm(total=self.train_data.num_batches) as pbar_train:  # create a progress bar for training
+            with tqdm.tqdm(total=len(self.train_data)) as pbar_train:  # create a progress bar for training
                 for idx, (x, y) in enumerate(self.train_data):  # get data batches
                     loss, accuracy = self.run_train_iter(x=x, y=y)  # take a training iter step
                     current_epoch_losses["train_loss"].append(loss)  # add current iter loss to the train loss list
@@ -165,7 +165,7 @@ class ExperimentBuilder(nn.Module):
                     pbar_train.update(1)
                     pbar_train.set_description("loss: {:.4f}, accuracy: {:.4f}".format(loss, accuracy))
 
-            with tqdm.tqdm(total=self.val_data.num_batches) as pbar_val:  # create a progress bar for validation
+            with tqdm.tqdm(total=len(self.val_data)) as pbar_val:  # create a progress bar for validation
                 for x, y in self.val_data:  # get data batches
                     loss, accuracy = self.run_evaluation_iter(x=x, y=y)  # run a validation iter
                     current_epoch_losses["val_loss"].append(loss)  # add current iter loss to val loss list.
