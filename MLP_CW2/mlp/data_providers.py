@@ -299,7 +299,7 @@ class AudioDataProvider(DataProvider):
         # construct path to data using os.path.join to ensure the correct path
         # separator for the current platform / OS is used
         # MLP_DATA_DIR environment variable should point to the data directory
-        first_path = os.path.abspath("../data/")
+        first_path = os.path.abspath("../MLP_CW2/data/")
         data_path = os.path.join(first_path, 'processed_data_{0}.hdf5'.format(which_set))
         #data_path = os.path.join(
         #    os.environ['MLP_DATA_DIR'], 'processed_data-{0}.npz'.format(which_set))
@@ -310,28 +310,24 @@ class AudioDataProvider(DataProvider):
         loaded = h5py.File(data_path, 'r')
         #inputs, targets = loaded['inputs'], loaded['targets']
         inputs = loaded['all_inputs']
-        inputs = inputs[:100]
-        
-        inputs = inputs.astype(np.float32)
-        ####Temporal solution
-        data_path_labels = os.path.join(first_path, 'train.csv')
-        df = pd.read_csv(data_path_labels)
-        targets = df['label'].values
-        targets = targets[:100]
-        if flatten:
-            inputs = np.reshape(inputs, newshape=(-1, 64*32000))
-        else:
-            inputs = np.reshape(inputs, newshape=(-1, 1, 64, 32000))
+        targets = loaded['targets']
+        inputs = inputs[:1]
+        targets = targets[:1]
+        #inputs = inputs.astype(np.float32)
+        #if flatten:
+        #    inputs = np.reshape(inputs, newshape=(-1, 64*32000))
+        #else:
+        #    inputs = np.reshape(inputs, newshape=(-1, 1, 64, 32000))
         # pass the loaded data to the parent class __init__
         super(AudioDataProvider, self).__init__(
             inputs, targets, batch_size, max_num_batches, shuffle_order, rng)
 
-    def next(self):
+    #def next(self):
         """Returns next data batch or raises `StopIteration` if at end."""
-        inputs_batch, targets_batch = super(AudioDataProvider, self).next()
-        return inputs_batch, self.to_one_of_k(targets_batch)
+    #    inputs_batch, targets_batch = super(AudioDataProvider, self).next()
+    #    return inputs_batch, self.to_one_of_k(targets_batch)
 
-    def to_one_of_k(self, int_targets):
+    #def to_one_of_k(self, int_targets):
         """Converts integer coded class target to 1 of K coded targets.
 
         Args:
@@ -347,16 +343,16 @@ class AudioDataProvider(DataProvider):
             which is equal to one.
         """
         
-        keys = np.unique(int_targets)
-        values = np.arange(0,len(keys))
-        dict_ = dict(zip(keys,values))
-        
-        targets_int = np.asarray([dict_[tar] for tar in int_targets])
-        
-        
-        one_of_k_targets = np.zeros((targets_int.shape[0], self.num_classes))
-        one_of_k_targets[range(targets_int.shape[0]),targets_int] = 1
-        return one_of_k_targets
+    #    keys = np.unique(int_targets)
+    #    values = np.arange(0,len(keys))
+    #   dict_ = dict(zip(keys,values))
+    #   
+    #   targets_int = np.asarray([dict_[tar] for tar in int_targets])
+    #   
+    #   
+    #   one_of_k_targets = np.zeros((targets_int.shape[0], self.num_classes))
+    #   one_of_k_targets[range(targets_int.shape[0]),targets_int] = 1
+    #   return one_of_k_targets
 
 class MetOfficeDataProvider(DataProvider):
     """South Scotland Met Office weather data provider."""

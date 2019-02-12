@@ -17,7 +17,7 @@ from mlp.pytorch_experiment_scripts.storage_utils import save_to_stats_pkl_file,
 
 class ExperimentBuilder(nn.Module):
     def __init__(self, network_model, experiment_name, num_epochs, train_data, val_data,
-                 test_data, weight_decay_coefficient, use_gpu, continue_from_epoch=-1):
+                 test_data,batch_size, weight_decay_coefficient, use_gpu, continue_from_epoch=-1):
         """
         Initializes an ExperimentBuilder object. Such an object takes care of running training and evaluation of a deep net
         on a given dataset. It also takes care of saving per epoch models and automatically inferring the best val model
@@ -48,6 +48,7 @@ class ExperimentBuilder(nn.Module):
         self.train_data = train_data
         self.val_data = val_data
         self.test_data = test_data
+        self.batch_size = batch_size
         self.optimizer = optim.Adam(self.parameters(), amsgrad=False,
                                     weight_decay=weight_decay_coefficient)
         # Generate the directory names
@@ -220,3 +221,14 @@ class ExperimentBuilder(nn.Module):
                         stats_dict=test_losses, current_epoch=0)
 
         return total_losses, test_losses
+    
+    def convert_h5_to_numpy(self,x,y):
+        """
+        Convert h5py to numpy format
+        """
+        x_np = x[:]
+        y_np = y[:]
+        
+        x_reshape = np.reshape(x_np, newshape=(-1, self.batch_size, 64, 32000))
+        
+        return x_reshape,y_np

@@ -39,5 +39,5 @@ conv_experiment = ExperimentBuilder(network_model=custom_conv_net,
                                     use_gpu=args.use_gpu,
                                     continue_from_epoch=args.continue_from_epoch,
                                     train_data=train_data, val_data=val_data,
-                                    test_data=test_data)  # build an experiment object
+                                    test_data=test_data, batch_size = args.batch_size)  # build an experiment object
 experiment_metrics, test_metrics = conv_experiment.run_experiment()  # run experiment and return experiment metrics
