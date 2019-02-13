@@ -1,1 +1,0 @@
-Namespace(batch_size=100, continue_from_epoch=-1, dim_reduction_type='strided_convolution', experiment_name='exp_1', image_height=3, image_num_channels=1, image_width=5, kernel_size=3, num_epochs=100, num_filters=['5,5,5'], num_layers=3, seed=7112018, use_gpu=False, weight_decay_coefficient=1e-05)

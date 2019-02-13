@@ -20,9 +20,9 @@ num_filters = [int(filt) for filt in args.num_filters[0].split(",")]
 
 save_parameters(args.experiment_name,args)
 
-train_data = data_providers.AudioDataProvider('test', batch_size=args.batch_size,
+train_data = data_providers.AudioDataProvider('train', batch_size=args.batch_size,
                                                rng=rng,shuffle_order=False)  # initialize our rngs using the argument set seed
-val_data = data_providers.AudioDataProvider('test', batch_size=args.batch_size,
+val_data = data_providers.AudioDataProvider('valid', batch_size=args.batch_size,
                                              rng=rng,shuffle_order=False)  # initialize our rngs using the argument set seed
 test_data = data_providers.AudioDataProvider('test', batch_size=args.batch_size,
                                               rng=rng,shuffle_order=False)  # initialize our rngs using the argument set seed
@@ -40,5 +40,9 @@ conv_experiment = ExperimentBuilder(network_model=custom_conv_net,
                                     continue_from_epoch=args.continue_from_epoch,
                                     train_data=train_data, val_data=val_data,
                                     test_data=test_data, batch_size = args.batch_size,
-                                    training_instances = args.training_instances)  # build an experiment object
+                                    training_instances = args.training_instances,
+                                    test_instances = args.test_instances,
+                                    val_instances = args.val_instances,
+                                    image_height = args.image_height,
+                                    image_width=args.image_width)  # build an experiment object
 experiment_metrics, test_metrics = conv_experiment.run_experiment()  # run experiment and return experiment metrics
