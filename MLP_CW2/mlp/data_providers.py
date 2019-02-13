@@ -299,8 +299,9 @@ class AudioDataProvider(DataProvider):
         # construct path to data using os.path.join to ensure the correct path
         # separator for the current platform / OS is used
         # MLP_DATA_DIR environment variable should point to the data directory
-        first_path = os.path.abspath("../MLP_CW2/data/")
-        data_path = os.path.join(first_path, 'processed_data_{0}.hdf5'.format(which_set))
+        #first_path = os.path.abspath("../MLP_CW2/data/")
+        first_path = os.path.abspath("/home/jordi/mlp_audio/MLPProjectAudio/MLP_CW2/data")
+        data_path = os.path.join(first_path, 'test.hdf5'.format(which_set))
         #data_path = os.path.join(
         #    os.environ['MLP_DATA_DIR'], 'processed_data-{0}.npz'.format(which_set))
         assert os.path.isfile(data_path), (
@@ -311,13 +312,11 @@ class AudioDataProvider(DataProvider):
         #inputs, targets = loaded['inputs'], loaded['targets']
         inputs = loaded['all_inputs']
         targets = loaded['targets']
-        inputs = inputs[:1]
-        targets = targets[:1]
-        #inputs = inputs.astype(np.float32)
+
         #if flatten:
         #    inputs = np.reshape(inputs, newshape=(-1, 64*32000))
         #else:
-        #    inputs = np.reshape(inputs, newshape=(-1, 1, 64, 32000))
+        #    inputs = np.reshape(inputs, newshape=(-1, 1, 10, 15))
         # pass the loaded data to the parent class __init__
         super(AudioDataProvider, self).__init__(
             inputs, targets, batch_size, max_num_batches, shuffle_order, rng)

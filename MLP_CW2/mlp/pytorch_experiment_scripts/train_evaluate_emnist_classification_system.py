@@ -20,12 +20,12 @@ num_filters = [int(filt) for filt in args.num_filters[0].split(",")]
 
 save_parameters(args.experiment_name,args)
 
-train_data = data_providers.AudioDataProvider('train', batch_size=args.batch_size,
-                                               rng=rng)  # initialize our rngs using the argument set seed
-val_data = data_providers.AudioDataProvider('train', batch_size=args.batch_size,
-                                             rng=rng)  # initialize our rngs using the argument set seed
-test_data = data_providers.AudioDataProvider('train', batch_size=args.batch_size,
-                                              rng=rng)  # initialize our rngs using the argument set seed
+train_data = data_providers.AudioDataProvider('test', batch_size=args.batch_size,
+                                               rng=rng,shuffle_order=False)  # initialize our rngs using the argument set seed
+val_data = data_providers.AudioDataProvider('test', batch_size=args.batch_size,
+                                             rng=rng,shuffle_order=False)  # initialize our rngs using the argument set seed
+test_data = data_providers.AudioDataProvider('test', batch_size=args.batch_size,
+                                              rng=rng,shuffle_order=False)  # initialize our rngs using the argument set seed
 
 custom_conv_net = ConvolutionalNetwork(  # initialize our network object, in this case a ConvNet
     input_shape=(args.batch_size, args.image_num_channels, args.image_height, args.image_width),
@@ -39,5 +39,6 @@ conv_experiment = ExperimentBuilder(network_model=custom_conv_net,
                                     use_gpu=args.use_gpu,
                                     continue_from_epoch=args.continue_from_epoch,
                                     train_data=train_data, val_data=val_data,
-                                    test_data=test_data, batch_size = args.batch_size)  # build an experiment object
+                                    test_data=test_data, batch_size = args.batch_size,
+                                    training_instances = args.training_instances)  # build an experiment object
 experiment_metrics, test_metrics = conv_experiment.run_experiment()  # run experiment and return experiment metrics

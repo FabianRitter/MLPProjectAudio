@@ -17,7 +17,7 @@ from mlp.pytorch_experiment_scripts.storage_utils import save_to_stats_pkl_file,
 
 class ExperimentBuilder(nn.Module):
     def __init__(self, network_model, experiment_name, num_epochs, train_data, val_data,
-                 test_data,batch_size, weight_decay_coefficient, use_gpu, continue_from_epoch=-1):
+                 test_data,batch_size, weight_decay_coefficient, use_gpu,training_instances, continue_from_epoch=-1):
         """
         Initializes an ExperimentBuilder object. Such an object takes care of running training and evaluation of a deep net
         on a given dataset. It also takes care of saving per epoch models and automatically inferring the best val model
@@ -49,6 +49,7 @@ class ExperimentBuilder(nn.Module):
         self.val_data = val_data
         self.test_data = test_data
         self.batch_size = batch_size
+        self.training_instances = training_instances
         self.optimizer = optim.Adam(self.parameters(), amsgrad=False,
                                     weight_decay=weight_decay_coefficient)
         # Generate the directory names
@@ -76,6 +77,7 @@ class ExperimentBuilder(nn.Module):
             self.starting_epoch = continue_from_epoch
         else:
             self.starting_epoch = 0
+            
 
     def run_train_iter(self, x, y):
         """
@@ -85,7 +87,7 @@ class ExperimentBuilder(nn.Module):
         :return: the loss and accuracy for this batch
         """
         self.train()  # sets model to training mode (in case batch normalization or other methods have different procedures for training and evaluation)
-        y = np.argmax(y, axis=1)  # convert one hot encoded labels to single integer labels
+        #y = np.argmax(y, axis=1)  # convert one hot encoded labels to single integer labels
         x, y = torch.Tensor(x).float().to(device=self.device), torch.Tensor(y).long().to(
             device=self.device)  # send data to device as torch tensors
         out = self.model.forward(x)  # forward the data in the model
@@ -107,7 +109,7 @@ class ExperimentBuilder(nn.Module):
         :return: the loss and accuracy for this batch
         """
         self.eval()  # sets the system to validation mode
-        y = np.argmax(y, axis=1)  # convert one hot encoded labels to single integer labels
+        #y = np.argmax(y, axis=1)  # convert one hot encoded labels to single integer labels
         x, y = torch.Tensor(x).float().to(device=self.device), torch.Tensor(y).long().to(
             device=self.device)  # convert data to pytorch tensors and send to the computation device
         out = self.model.forward(x)  # forward the data in the model
@@ -157,17 +159,30 @@ class ExperimentBuilder(nn.Module):
         for i, epoch_idx in enumerate(range(self.starting_epoch, self.num_epochs)):
             epoch_start_time = time.time()
             current_epoch_losses = {"train_acc": [], "train_loss": [], "val_acc": [], "val_loss": []}
-
-            with tqdm.tqdm(total=self.train_data.num_batches) as pbar_train:  # create a progress bar for training
-                for idx, (x, y) in enumerate(self.train_data):  # get data batches
+            print("self.train_data.num_batches",self.train_data.num_batches)
+            
+            number_batches = int(self.training_instances/self.batch_size)
+            print("eeeeee",self.training_instances/self.batch_size)
+            #with tqdm.tqdm(total=self.train_data.num_batches) as pbar_train:  # create a progress bar for training
+            with tqdm.tqdm(total=number_batches) as pbar_train:  # create a progress bar for training
+                #for idx, (x, y) in enumerate(self.train_data):  # get data batches
+                 for idx in range(number_batches):
+                    print("idx",idx)
+                    x_np = self.train_data.inputs[idx*self.batch_size:(idx+1)*self.batch_size]
+                    y_np = self.train_data.targets[idx*self.batch_size:(idx+1)*self.batch_size]    
+                    x = np.reshape(x_np, newshape=(self.batch_size,-1, 3, 5))
+                    y = y_np
+                    print("shape",x.shape)
                     loss, accuracy = self.run_train_iter(x=x, y=y)  # take a training iter step
                     current_epoch_losses["train_loss"].append(loss)  # add current iter loss to the train loss list
                     current_epoch_losses["train_acc"].append(accuracy)  # add current iter acc to the train acc list
                     pbar_train.update(1)
                     pbar_train.set_description("loss: {:.4f}, accuracy: {:.4f}".format(loss, accuracy))
-
-            with tqdm.tqdm(total=self.val_data.num_batches) as pbar_val:  # create a progress bar for validation
-                for x, y in self.val_data:  # get data batches
+            
+            #with tqdm.tqdm(total=self.val_data.num_batches) as pbar_val:  # create a progress bar for validation
+            with tqdm.tqdm(total=number_batches) as pbar_val:  # create a progress bar for validation
+                for idx in range(number_batches):
+                #for x, y in self.val_data:  # get data batches
                     loss, accuracy = self.run_evaluation_iter(x=x, y=y)  # run a validation iter
                     current_epoch_losses["val_loss"].append(loss)  # add current iter loss to val loss list.
                     current_epoch_losses["val_acc"].append(accuracy)  # add current iter acc to val acc lst.
@@ -204,8 +219,8 @@ class ExperimentBuilder(nn.Module):
                         # load best validation model
                         model_save_name="train_model")
         current_epoch_losses = {"test_acc": [], "test_loss": []}  # initialize a statistics dict
-        with tqdm.tqdm(total=self.test_data.num_batches) as pbar_test:  # ini a progress bar
-            for x, y in self.test_data:  # sample batch
+        with tqdm.tqdm(total=number_batches) as pbar_test:  # ini a progress bar
+            for idx in range(number_batches):  # sample batch
                 loss, accuracy = self.run_evaluation_iter(x=x,
                                                           y=y)  # compute loss and accuracy by running an evaluation step
                 current_epoch_losses["test_loss"].append(loss)  # save test loss
