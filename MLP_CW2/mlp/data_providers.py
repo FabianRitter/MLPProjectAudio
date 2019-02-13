@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """Data providers.
-
 This module provides classes for loading datasets and iterating over batches of
 data points.
 """
@@ -20,7 +19,6 @@ class DataProvider(object):
     def __init__(self, inputs, targets, batch_size, max_num_batches=-1,
                  shuffle_order=True, rng=None):
         """Create a new data provider object.
-
         Args:
             inputs (ndarray): Array of data input features of shape
                 (num_data, input_dim).
@@ -88,7 +86,6 @@ class DataProvider(object):
 
     def __iter__(self):
         """Implements Python iterator interface.
-
         This should return an object implementing a `next` method which steps
         through a sequence returning one element at a time and raising
         `StopIteration` when at the end of the sequence. Here the object
@@ -134,7 +131,7 @@ class DataProvider(object):
         targets_batch = self.targets[batch_slice]
         self._curr_batch += 1
         return inputs_batch, targets_batch
-    
+
 class EMNISTDataProvider(DataProvider):
     """Data provider for EMNIST handwritten digit images."""
 
@@ -210,7 +207,6 @@ class MNISTDataProvider(DataProvider):
     def __init__(self, which_set='train', batch_size=100, max_num_batches=-1,
                  shuffle_order=True, rng=None):
         """Create a new MNIST data provider object.
-
         Args:
             which_set: One of 'train', 'valid' or 'eval'. Determines which
                 portion of the MNIST data this object should provide.
@@ -253,13 +249,11 @@ class MNISTDataProvider(DataProvider):
 
     def to_one_of_k(self, int_targets):
         """Converts integer coded class target to 1 of K coded targets.
-
         Args:
             int_targets (ndarray): Array of integer coded class targets (i.e.
                 where an integer from 0 to `num_classes` - 1 is used to
                 indicate which is the correct class). This should be of shape
                 (num_data,).
-
         Returns:
             Array of 1 of K coded targets i.e. an array of shape
             (num_data, num_classes) where for each row all elements are equal
@@ -276,7 +270,6 @@ class AudioDataProvider(DataProvider):
     def __init__(self, which_set='train', batch_size=100, max_num_batches=-1,
                  shuffle_order=True, rng=None, flatten=False):
         """Create a new EMNIST data provider object.
-
         Args:
             which_set: One of 'train', 'valid' or 'eval'. Determines which
                 portion of the Audio data this object should provide.
@@ -299,8 +292,9 @@ class AudioDataProvider(DataProvider):
         # construct path to data using os.path.join to ensure the correct path
         # separator for the current platform / OS is used
         # MLP_DATA_DIR environment variable should point to the data directory
+        #first_path = os.path.abspath("../MLP_CW2/data/")
         first_path = os.path.abspath("/home/jordi/mlp_audio/MLPProjectAudio/MLP_CW2/data")
-        data_path = os.path.join(first_path, 'processed_data_{0}.hdf5'.format(which_set))
+        data_path = os.path.join(first_path, 'test.hdf5'.format(which_set))
         #data_path = os.path.join(
         #    os.environ['MLP_DATA_DIR'], 'processed_data-{0}.npz'.format(which_set))
         assert os.path.isfile(data_path), (
@@ -310,53 +304,45 @@ class AudioDataProvider(DataProvider):
         loaded = h5py.File(data_path, 'r')
         #inputs, targets = loaded['inputs'], loaded['targets']
         inputs = loaded['all_inputs']
-        inputs = inputs[:100]
-        
-        inputs = inputs.astype(np.float32)
-        ####Temporal solution
-        data_path_labels = os.path.join(first_path, 'train.csv')
-        df = pd.read_csv(data_path_labels)
-        targets = df['label'].values
-        targets = targets[:100]
-        if flatten:
-            inputs = np.reshape(inputs, newshape=(-1, 64*32000))
-        else:
-            inputs = np.reshape(inputs, newshape=(-1, 1, 64, 32000))
+        targets = loaded['targets']
+
+        #if flatten:
+        #    inputs = np.reshape(inputs, newshape=(-1, 64*32000))
+        #else:
+        #    inputs = np.reshape(inputs, newshape=(-1, 1, 10, 15))
         # pass the loaded data to the parent class __init__
         super(AudioDataProvider, self).__init__(
             inputs, targets, batch_size, max_num_batches, shuffle_order, rng)
 
-    def next(self):
+    #def next(self):
         """Returns next data batch or raises `StopIteration` if at end."""
-        inputs_batch, targets_batch = super(AudioDataProvider, self).next()
-        return inputs_batch, self.to_one_of_k(targets_batch)
+    #    inputs_batch, targets_batch = super(AudioDataProvider, self).next()
+    #    return inputs_batch, self.to_one_of_k(targets_batch)
 
-    def to_one_of_k(self, int_targets):
+    #def to_one_of_k(self, int_targets):
         """Converts integer coded class target to 1 of K coded targets.
-
         Args:
             int_targets (ndarray): Array of integer coded class targets (i.e.
                 where an integer from 0 to `num_classes` - 1 is used to
                 indicate which is the correct class). This should be of shape
                 (num_data,).
-
         Returns:
             Array of 1 of K coded targets i.e. an array of shape
             (num_data, num_classes) where for each row all elements are equal
             to zero except for the column corresponding to the correct class
             which is equal to one.
         """
-        
-        keys = np.unique(int_targets)
-        values = np.arange(0,len(keys))
-        dict_ = dict(zip(keys,values))
-        
-        targets_int = np.asarray([dict_[tar] for tar in int_targets])
-        
-        
-        one_of_k_targets = np.zeros((targets_int.shape[0], self.num_classes))
-        one_of_k_targets[range(targets_int.shape[0]),targets_int] = 1
-        return one_of_k_targets
+
+    #    keys = np.unique(int_targets)
+    #    values = np.arange(0,len(keys))
+    #   dict_ = dict(zip(keys,values))
+    #
+    #   targets_int = np.asarray([dict_[tar] for tar in int_targets])
+    #
+    #
+    #   one_of_k_targets = np.zeros((targets_int.shape[0], self.num_classes))
+    #   one_of_k_targets[range(targets_int.shape[0]),targets_int] = 1
+    #   return one_of_k_targets
 
 class MetOfficeDataProvider(DataProvider):
     """South Scotland Met Office weather data provider."""
@@ -364,7 +350,6 @@ class MetOfficeDataProvider(DataProvider):
     def __init__(self, window_size, batch_size=10, max_num_batches=-1,
                  shuffle_order=True, rng=None):
         """Create a new Met Office data provider object.
-
         Args:
             window_size (int): Size of windows to split weather time series
                data into. The constructed input features will be the first
@@ -410,7 +395,6 @@ class CCPPDataProvider(DataProvider):
     def __init__(self, which_set='train', input_dims=None, batch_size=10,
                  max_num_batches=-1, shuffle_order=True, rng=None):
         """Create a new Combined Cycle Power Plant data provider object.
-
         Args:
             which_set: One of 'train' or 'valid'. Determines which portion of
                 data this object should provide.
@@ -458,7 +442,6 @@ class AugmentedMNISTDataProvider(MNISTDataProvider):
     def __init__(self, which_set='train', batch_size=100, max_num_batches=-1,
                  shuffle_order=True, rng=None, transformer=None):
         """Create a new augmented MNIST data provider object.
-
         Args:
             which_set: One of 'train', 'valid' or 'test'. Determines which
                 portion of the MNIST data this object should provide.
