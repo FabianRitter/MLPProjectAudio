@@ -77,7 +77,6 @@ fmax = int(fs / 2)
 fmin = 0
 normalize_audio = True
 spectrogram_type = 'power'
-minimum_mel = 0
 maximum_mel = 0
 
 
@@ -125,7 +124,6 @@ def convert2mel(audio,base_path,fs, n_fft,fmax,n_mels,number_of_frames):
     Convert raw audio to mel spectrogram
     """
     global maximum_mel
-    global minimum_mel
 
     path = os.path.join(base_path, audio)
     data, source_fs = soundfile.read(file=path)
@@ -134,26 +132,16 @@ def convert2mel(audio,base_path,fs, n_fft,fmax,n_mels,number_of_frames):
     if fs != source_fs:
         data = librosa.core.resample(data, source_fs,fs)
     ### extracted from Eduardo Fonseca Code, it seems there are 3 audio corrupted so we need to check length
-    
-    if len(data) > 0 :
-        data = normalize_amplitude(data)
-    else: 
-        ###### tenemos que ver como borrar estos audios! 
-        data = np.ones((number_of_frames, 1))
-        print('File corrupted. Could not open: %s' % path)
-    
-    mels = melspectrogram(y= data / np.linalg.norm(data), sr=fs,
+    data = normalize_amplitude(data)
+    mels = melspectrogram(y= data , sr=fs,
                             n_fft=2048, hop_length=hop_length_samples,
                             power=2, n_mels=n_mels,fmax=fmax) 
     mel_normalized = normalize_mel_histogram(mels.T,number_of_frames)
-
+    mel_normalized = (mel_normalized -  np.mean(mel_normalized, axis =0)) / np.amax(mel_normalized) 
     if mel_normalized.max() > maximum_mel:
         maximum_mel = mel_normalized.max()
-    if mel_normalized.min() < minimum_mel:
-        minimum_mel = mel_normalized.min()
-    mel_normalized = mel_normalized / np.linalg.norm(mel_normalized)
-    mel_norm_flat = mel_normalized.flatten()
-    return mel_norm_flat
+        
+    return mel_normalized.flatten()
 
 
 
@@ -194,16 +182,15 @@ if experiment_number == 1:
 else:
     hdf5_store = h5py.File(hdf5_name, "a")
     data_processed = [convert2mel(audio,base_path,fs, n_fft,fmax,n_mels,number_of_frames) for ii,audio in enumerate(fname)]
+
     hdf5_store['all_inputs'][chunk * (experiment_number-1) :chunk * experiment_number] = data_processed
 
 
 print("maximum_mel of batch", maximum_mel)
-print("minimum_mel of batch", minimum_mel)
 print("saving data for experiment" , experiment_number)
 
 
 
 
 hdf5_store.close()
-
 
