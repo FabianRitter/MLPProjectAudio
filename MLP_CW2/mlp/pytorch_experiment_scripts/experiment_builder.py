@@ -36,9 +36,14 @@ class ExperimentBuilder(nn.Module):
         """
         super(ExperimentBuilder, self).__init__()
         if torch.cuda.is_available() and use_gpu:  # checks whether a cuda gpu is available and whether the gpu flag is True
-            self.device = torch.device('cuda')  # sets device to be cuda
-            os.environ["CUDA_VISIBLE_DEVICES"] = "0"  # sets the main GPU to be the one at index 0 (on multi gpu machines you can choose which one you want to use by using the relevant GPU ID)
+            if "," in gpu_id:
+                self.device = [torch.device('cuda:{}'.format(idx)) for idx in gpu_id.split(",")]  # sets device to be cuda
+            else:
+                self.device = torch.device('cuda:{}'.format(gpu_id))  # sets device to be cuda
+
+            os.environ["CUDA_VISIBLE_DEVICES"] = gpu_id  # sets the main GPU to be the one at index 0 (on multi gpu machines you can choose which one you want to use by using the relevant GPU ID)
             print("use GPU")
+            print("GPU ID {}".format(gpu_id))
         else:
             print("use CPU")
             self.device = torch.device('cpu')  # sets the device to be CPU
@@ -69,7 +74,11 @@ class ExperimentBuilder(nn.Module):
 
         if not os.path.exists(self.experiment_folder):  # If experiment directory does not exist
             os.mkdir(self.experiment_folder)  # create the experiment directory
+
+        if not os.path.exists(self.experiment_logs):
             os.mkdir(self.experiment_logs)  # create the experiment log directory
+
+        if not os.path.exists(self.experiment_saved_models):
             os.mkdir(self.experiment_saved_models)  # create the experiment saved models directory
 
         self.num_epochs = num_epochs
