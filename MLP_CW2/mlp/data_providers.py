@@ -311,7 +311,19 @@ class AudioDataProvider(DataProvider):
         loaded = h5py.File(data_path, 'r')
         #inputs, targets = loaded['inputs'], loaded['targets']
         inputs = loaded['all_inputs']
-        targets = loaded['targets']
+        int_targets = loaded['targets'][:]
+        
+        keys = np.unique(int_targets)
+        values = np.arange(0,len(keys))
+        dict_ = dict(zip(keys,values))
+      
+        targets_int = np.asarray([dict_[tar] for tar in int_targets])
+      
+      
+        one_of_k_targets = np.zeros((targets_int.shape[0], self.num_classes))
+        one_of_k_targets[range(targets_int.shape[0]),targets_int] = 1
+        
+        targets = one_of_k_targets
 
         #if flatten:
         #    inputs = np.reshape(inputs, newshape=(-1, 64*32000))

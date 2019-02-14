@@ -20,9 +20,9 @@ num_filters = [int(filt) for filt in args.num_filters[0].split(",")]
 
 save_parameters(args.experiment_name,args)
 
-train_data = data_providers.AudioDataProvider('train', batch_size=args.batch_size,
+train_data = data_providers.AudioDataProvider('test', batch_size=args.batch_size,
                                                rng=rng,shuffle_order=False)  # initialize our rngs using the argument set seed
-val_data = data_providers.AudioDataProvider('valid', batch_size=args.batch_size,
+val_data = data_providers.AudioDataProvider('test', batch_size=args.batch_size,
                                              rng=rng,shuffle_order=False)  # initialize our rngs using the argument set seed
 test_data = data_providers.AudioDataProvider('test', batch_size=args.batch_size,
                                               rng=rng,shuffle_order=False)  # initialize our rngs using the argument set seed

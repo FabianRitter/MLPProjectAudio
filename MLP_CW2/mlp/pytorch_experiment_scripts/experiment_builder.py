@@ -102,8 +102,7 @@ class ExperimentBuilder(nn.Module):
         :return: the loss and accuracy for this batch
         """
         self.train()  # sets model to training mode (in case batch normalization or other methods have different procedures for training and evaluation)
-        #y = np.argmax(y, axis=1)  # convert one hot encoded labels to single integer labels
-        print("XXXXXXXX",x.shape)
+        y = np.argmax(y, axis=1)  # convert one hot encoded labels to single integer labels
         x, y = torch.Tensor(x).float().to(device=self.device), torch.Tensor(y).long().to(
             device=self.device)  # send data to device as torch tensors
         out = self.model.forward(x)  # forward the data in the model
@@ -125,7 +124,7 @@ class ExperimentBuilder(nn.Module):
         :return: the loss and accuracy for this batch
         """
         self.eval()  # sets the system to validation mode
-        #y = np.argmax(y, axis=1)  # convert one hot encoded labels to single integer labels
+        y = np.argmax(y, axis=1)  # convert one hot encoded labels to single integer labels
         x, y = torch.Tensor(x).float().to(device=self.device), torch.Tensor(y).long().to(
             device=self.device)  # convert data to pytorch tensors and send to the computation device
         out = self.model.forward(x)  # forward the data in the model
