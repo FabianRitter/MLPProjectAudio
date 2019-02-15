@@ -1,15 +1,15 @@
 import sys
 import os
-sys.path.append(os.path.abspath("/home/jordi/mlp_audio/MLPProjectAudio/MLP_CW2/mlp"))
+#sys.path.append(os.path.abspath("/home/jordi/mlp_audio/MLPProjectAudio/MLP_CW2/mlp"))
 
-import data_providers as data_providers
+import mlp.data_providers as data_providers
 import numpy as np
-from pytorch_experiment_scripts.arg_extractor import get_args
-from pytorch_experiment_scripts.experiment_builder import ExperimentBuilder
-from pytorch_experiment_scripts.model_architectures import ConvolutionalNetwork
+from mlp.pytorch_experiment_scripts.arg_extractor import get_args
+from mlp.pytorch_experiment_scripts.experiment_builder import ExperimentBuilder
+from mlp.pytorch_experiment_scripts.model_architectures import ConvolutionalNetwork
 import torch
 
-from pytorch_experiment_scripts.storage_utils import save_parameters
+from mlp.pytorch_experiment_scripts.storage_utils import save_parameters
 
 args = get_args()  # get arguments from command line
 rng = np.random.RandomState(seed=args.seed)  # set the seeds for the experiment
