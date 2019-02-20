@@ -17,16 +17,16 @@ def get_args():
         description='Welcome to the MLP course\'s Pytorch training and inference helper script')
 
     parser.add_argument('--batch_size', nargs="?", type=int, default=64, help='Batch_size for experiment')
-    parser.add_argument('--training_instances', nargs="?", type=int, default=17585, help='Number of training instances')
-    parser.add_argument('--test_instances', nargs="?", type=int, default=947, help='Number of test instances')
-    parser.add_argument('--val_instances', nargs="?", type=int, default=947, help='Number of validation instances')
+    parser.add_argument('--training_instances', nargs="?", type=int, default=130, help='Number of training instances')
+    parser.add_argument('--test_instances', nargs="?", type=int, default=128, help='Number of test instances')
+    parser.add_argument('--val_instances', nargs="?", type=int, default=128, help='Number of validation instances')
     parser.add_argument('--continue_from_epoch', nargs="?", type=int, default=-1, help='Batch_size for experiment')
     parser.add_argument('--seed', nargs="?", type=int, default=7112018,
                         help='Seed to use for random number generator for experiment')
     parser.add_argument('--image_num_channels', nargs="?", type=int, default=1,
                         help='The channel dimensionality of our image-data')
-    parser.add_argument('--image_height', nargs="?", type=int, default=64, help='Height of image data')
-    parser.add_argument('--image_width', nargs="?", type=int, default=32000, help='Width of image data')
+    parser.add_argument('--image_height', nargs="?", type=int, default=10, help='Height of image data')
+    parser.add_argument('--image_width', nargs="?", type=int, default=10, help='Width of image data')
     parser.add_argument('--dim_reduction_type', nargs="?", type=str, default='strided_convolution',
                         help='One of [strided_convolution, dilated_convolution, max_pooling, avg_pooling]')
     parser.add_argument('--num_layers', nargs="?", type=int, default=3,
@@ -44,6 +44,8 @@ def get_args():
                         help='Experiment name - to be used for building the experiment folder')
     parser.add_argument('--use_gpu', nargs="?", type=str2bool, default=False,
                         help='A flag indicating whether we will use GPU acceleration or not')
+    parser.add_argument('--use_cluster', nargs="?", type=str2bool, default=False,
+                        help='A flag indicating whether we will use the cluster or not')
     parser.add_argument('--weight_decay_coefficient', nargs="?", type=float, default=1e-05,
                         help='Weight decay to use for Adam')
     args = parser.parse_args()

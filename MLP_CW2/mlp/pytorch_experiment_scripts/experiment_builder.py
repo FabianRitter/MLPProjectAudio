@@ -13,13 +13,13 @@ import time
 import math
 
 from mlp.pytorch_experiment_scripts.storage_utils import save_to_stats_pkl_file, load_from_stats_pkl_file, \
-    save_statistics, load_statistics
+    save_statistics, load_statistics,save_parameters
 
 
 class ExperimentBuilder(nn.Module):
     def __init__(self, network_model, experiment_name, num_epochs, train_data, val_data,
                  test_data,batch_size, weight_decay_coefficient, use_gpu,training_instances,
-                 test_instances,val_instances,image_height, image_width,continue_from_epoch=-1):
+                 test_instances,val_instances,image_height, image_width,use_cluster,args,continue_from_epoch=-1):
         """
         Initializes an ExperimentBuilder object. Such an object takes care of running training and evaluation of a deep net
         on a given dataset. It also takes care of saving per epoch models and automatically inferring the best val model
@@ -36,14 +36,19 @@ class ExperimentBuilder(nn.Module):
         """
         super(ExperimentBuilder, self).__init__()
         if torch.cuda.is_available() and use_gpu:  # checks whether a cuda gpu is available and whether the gpu flag is True
-            if "," in gpu_id:
-                self.device = [torch.device('cuda:{}'.format(idx)) for idx in gpu_id.split(",")]  # sets device to be cuda
-            else:
-                self.device = torch.device('cuda:{}'.format(gpu_id))  # sets device to be cuda
+            if use_cluster:
+                if "," in gpu_id:
+                    self.device = [torch.device('cuda:{}'.format(idx)) for idx in gpu_id.split(",")]  # sets device to be cuda
+                else:
+                    self.device = torch.device('cuda:{}'.format(gpu_id))  # sets device to be cuda
 
-            os.environ["CUDA_VISIBLE_DEVICES"] = gpu_id  # sets the main GPU to be the one at index 0 (on multi gpu machines you can choose which one you want to use by using the relevant GPU ID)
-            print("use GPU")
-            print("GPU ID {}".format(gpu_id))
+                os.environ["CUDA_VISIBLE_DEVICES"] = gpu_id  # sets the main GPU to be the one at index 0 (on multi gpu machines you can choose which one you want to use by using the relevant GPU ID)
+                print("use GPU")
+                print("GPU ID {}".format(gpu_id))
+            else:
+                self.device = torch.device('cuda')  # sets device to be cuda
+                os.environ["CUDA_VISIBLE_DEVICES"] = "0"  # sets the main GPU to be the one at index 0 (on multi gpu machines you can choose which one you want to use by using the relevant GPU ID)
+                print("use GPU")
         else:
             print("use CPU")
             self.device = torch.device('cpu')  # sets the device to be CPU
@@ -63,6 +68,7 @@ class ExperimentBuilder(nn.Module):
         self.image_width = image_width
         self.optimizer = optim.Adam(self.parameters(), amsgrad=False,
                                     weight_decay=weight_decay_coefficient)
+        
         # Generate the directory names
         self.experiment_folder = os.path.abspath(experiment_name)
         self.experiment_logs = os.path.abspath(os.path.join(self.experiment_folder, "result_outputs"))
@@ -74,6 +80,9 @@ class ExperimentBuilder(nn.Module):
 
         if not os.path.exists(self.experiment_folder):  # If experiment directory does not exist
             os.mkdir(self.experiment_folder)  # create the experiment directory
+        
+        # save experimental parameters 
+        save_parameters(args,self.experiment_logs)
 
         if not os.path.exists(self.experiment_logs):
             os.mkdir(self.experiment_logs)  # create the experiment log directory
