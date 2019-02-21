@@ -45,5 +45,6 @@ conv_experiment = ExperimentBuilder(network_model=custom_conv_net,
                                     image_height = args.image_height,
                                     image_width=args.image_width,
                                     use_cluster = args.use_cluster,
+                                    gpu_id=args.gpu_id,
                                     args = args)  # build an experiment object
 experiment_metrics, test_metrics = conv_experiment.run_experiment()  # run experiment and return experiment metrics

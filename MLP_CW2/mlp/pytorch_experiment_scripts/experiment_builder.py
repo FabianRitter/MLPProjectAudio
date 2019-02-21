@@ -19,7 +19,7 @@ from mlp.pytorch_experiment_scripts.storage_utils import save_to_stats_pkl_file,
 class ExperimentBuilder(nn.Module):
     def __init__(self, network_model, experiment_name, num_epochs, train_data, val_data,
                  test_data,batch_size, weight_decay_coefficient, use_gpu,training_instances,
-                 test_instances,val_instances,image_height, image_width,use_cluster,args,continue_from_epoch=-1):
+                 test_instances,val_instances,image_height, image_width,use_cluster,args,gpu_id,continue_from_epoch=-1):
         """
         Initializes an ExperimentBuilder object. Such an object takes care of running training and evaluation of a deep net
         on a given dataset. It also takes care of saving per epoch models and automatically inferring the best val model
