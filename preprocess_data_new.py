@@ -83,13 +83,15 @@ maximum_mel = 0
 
 if experiment_number and type_training == "train":
     if experiment_number == 275:
-        fname = fname[chunk * (experiment_number-1):-1]
-    fname = fname[chunk * (experiment_number-1): chunk * experiment_number]
+        fname = fname[chunk * (experiment_number-1): len(df_train['fname'].values) ]
+    else:
+        fname = fname[chunk * (experiment_number-1): chunk * experiment_number]
     print("the length of fname is", len(fname))
 else:
     if experiment_number == 15:
-        fname = fname[chunk * (experiment_number-1):-1]
-    fname = fname[chunk * (experiment_number-1): chunk * experiment_number]
+        fname = fname[chunk * (experiment_number-1):len(df_train['fname'].values)]
+    else:
+        fname = fname[chunk * (experiment_number-1): chunk * experiment_number]
     print('using {0} files for testing data'.format(len(fname)))
 
 

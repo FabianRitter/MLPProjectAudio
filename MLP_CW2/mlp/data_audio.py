@@ -293,8 +293,7 @@ class AudioDataProvider(DataProvider):
         # separator for the current platform / OS is used
         # MLP_DATA_DIR environment variable should point to the data directory
         first_path = os.path.abspath("../MLP_CW2/data/")
-        #first_path = os.path.abspath("/home/jordi/mlp_audio/MLPProjectAudio/MLP_CW2/data")
-        data_path = os.path.join(first_path, 'processed_data_{}.hdf5'.format(which_set))
+        data_path = os.path.join(first_path, 'test.hdf5'.format(which_set))
         #data_path = os.path.join(
         #    os.environ['MLP_DATA_DIR'], 'processed_data-{0}.npz'.format(which_set))
         assert os.path.isfile(data_path), (
@@ -303,25 +302,16 @@ class AudioDataProvider(DataProvider):
         # load data from compressed numpy file
         loaded = h5py.File(data_path, 'r')
         #inputs, targets = loaded['inputs'], loaded['targets']
-        inputs = loaded['all_inputs']
-        int_targets = loaded['targets'][:]
-        
-        keys = np.unique(int_targets)
-        values = np.arange(0,len(keys))
-        dict_ = dict(zip(keys,values))
-      
-        targets_int = np.asarray([dict_[tar] for tar in int_targets])
-      
-      
-        one_of_k_targets = np.zeros((targets_int.shape[0], self.num_classes))
-        one_of_k_targets[range(targets_int.shape[0]),targets_int] = 1
-        
-        targets = one_of_k_targets
-
-        #if flatten:
-        #    inputs = np.reshape(inputs, newshape=(-1, 64*32000))
-        #else:
-        #    inputs = np.reshape(inputs, newshape=(-1, 1, 10, 15))
+        inputs = loaded['all_inputs'][:]
+        targets = loaded['targets'][:]
+        print(inputs.shape)
+        #inputs = inputs[:1]
+        #targets = targets[:1]
+        #inputs = inputs.astype(np.float32)
+        if flatten:
+            inputs = np.reshape(inputs, newshape=(-1, 64*32000))
+        else:
+            inputs = np.reshape(inputs, newshape=(-1, 1, 10, 15))
         # pass the loaded data to the parent class __init__
         super(AudioDataProvider, self).__init__(
             inputs, targets, batch_size, max_num_batches, shuffle_order, rng)
