@@ -1,3 +1,4 @@
+
 from torch import nn
 from copy import deepcopy
 import torch
@@ -12,8 +13,7 @@ import numpy as np
 import time
 import math
 
-from mlp.pytorch_experiment_scripts.storage_utils import save_to_stats_pkl_file, load_from_stats_pkl_file, \
-    save_statistics, load_statistics,save_parameters
+from storage_utils import save_statistics
 
 
 class ExperimentBuilder(nn.Module):
@@ -55,8 +55,14 @@ class ExperimentBuilder(nn.Module):
 
         self.experiment_name = experiment_name
         self.model = network_model
-        self.model.to(self.device)  # sends the model from the cpu to the gpu
-        self.model.reset_parameters()  # re-initialize network parameters
+        self.model.reset_parameters()
+        if type(self.device) is list:
+            self.model.to(self.device[0])
+            self.model = nn.DataParallel(module=self.model, device_ids=self.device)
+            self.device = self.device[0]
+        else:
+            self.model.to(self.device)  # sends the model from the cpu to the gpu
+          # re-initialize network parameters
         self.train_data = train_data
         self.val_data = val_data
         self.test_data = test_data
@@ -68,21 +74,17 @@ class ExperimentBuilder(nn.Module):
         self.image_width = image_width
         self.optimizer = optim.Adam(self.parameters(), amsgrad=False,
                                     weight_decay=weight_decay_coefficient)
-        
         # Generate the directory names
         self.experiment_folder = os.path.abspath(experiment_name)
         self.experiment_logs = os.path.abspath(os.path.join(self.experiment_folder, "result_outputs"))
         self.experiment_saved_models = os.path.abspath(os.path.join(self.experiment_folder, "saved_models"))
-
+        print(self.experiment_folder, self.experiment_logs)
         # Set best models to be at 0 since we are just starting
         self.best_val_model_idx = 0
         self.best_val_model_acc = 0.
 
         if not os.path.exists(self.experiment_folder):  # If experiment directory does not exist
             os.mkdir(self.experiment_folder)  # create the experiment directory
-        
-        # save experimental parameters 
-        save_parameters(args,self.experiment_logs)
 
         if not os.path.exists(self.experiment_logs):
             os.mkdir(self.experiment_logs)  # create the experiment log directory
@@ -92,16 +94,34 @@ class ExperimentBuilder(nn.Module):
 
         self.num_epochs = num_epochs
         self.criterion = nn.CrossEntropyLoss().to(self.device)  # send the loss computation to the GPU
+        if continue_from_epoch == -2:
+            try:
+                self.best_val_model_idx, self.best_val_model_acc, self.state = self.load_model(
+                    model_save_dir=self.experiment_saved_models, model_save_name="train_model",
+                    model_idx='latest')  # reload existing model from epoch and return best val model index
+                # and the best val acc of that model
+                self.starting_epoch = continue_from_epoch
+            except:
+                print("Model objects cannot be found, initializing a new model and starting from scratch")
+                self.starting_epoch = 0
+                self.state = dict()
 
-        if continue_from_epoch != -1:  # if continue from epoch is not -1 then
-            self.best_val_model_idx, self.best_val_model_acc = self.load_model(
+        elif continue_from_epoch != -1:  # if continue from epoch is not -1 then
+            self.best_val_model_idx, self.best_val_model_acc, self.state = self.load_model(
                 model_save_dir=self.experiment_saved_models, model_save_name="train_model",
                 model_idx=continue_from_epoch)  # reload existing model from epoch and return best val model index
             # and the best val acc of that model
-            self.starting_epoch = continue_from_epoch
+            self.starting_epoch = self.state['current_epoch_idx']
         else:
-            self.starting_epoch = 0         
-            
+            self.starting_epoch = 0
+            self.state = dict()
+
+    def get_num_parameters(self):
+        total_num_params = 0
+        for param in self.parameters():
+            total_num_params += np.prod(param.shape)
+
+        return total_num_params
 
     def run_train_iter(self, x, y):
         """
@@ -111,9 +131,19 @@ class ExperimentBuilder(nn.Module):
         :return: the loss and accuracy for this batch
         """
         self.train()  # sets model to training mode (in case batch normalization or other methods have different procedures for training and evaluation)
-        y = np.argmax(y, axis=1)  # convert one hot encoded labels to single integer labels
-        x, y = torch.Tensor(x).float().to(device=self.device), torch.Tensor(y).long().to(
+
+        if len(y.shape) > 1:
+            y = np.argmax(y, axis=1)  # convert one hot encoded labels to single integer labels
+
+        #print(type(x))
+
+        if type(x) is np.ndarray:
+            x, y = torch.Tensor(x).float().to(device=self.device), torch.Tensor(y).long().to(
             device=self.device)  # send data to device as torch tensors
+
+        x = x.to(self.device)
+        y = y.to(self.device)
+
         out = self.model.forward(x)  # forward the data in the model
         loss = F.cross_entropy(input=out, target=y)  # compute loss
 
@@ -123,7 +153,7 @@ class ExperimentBuilder(nn.Module):
         self.optimizer.step()  # update network parameters
         _, predicted = torch.max(out.data, 1)  # get argmax of predictions
         accuracy = np.mean(list(predicted.eq(y.data).cpu()))  # compute accuracy
-        return loss.data, accuracy
+        return loss.data.detach().cpu().numpy(), accuracy
 
     def run_evaluation_iter(self, x, y):
         """
@@ -133,17 +163,21 @@ class ExperimentBuilder(nn.Module):
         :return: the loss and accuracy for this batch
         """
         self.eval()  # sets the system to validation mode
-        y = np.argmax(y, axis=1)  # convert one hot encoded labels to single integer labels
-        x, y = torch.Tensor(x).float().to(device=self.device), torch.Tensor(y).long().to(
+        if len(y.shape) > 1:
+            y = np.argmax(y, axis=1)  # convert one hot encoded labels to single integer labels
+        if type(x) is np.ndarray:
+            x, y = torch.Tensor(x).float().to(device=self.device), torch.Tensor(y).long().to(
             device=self.device)  # convert data to pytorch tensors and send to the computation device
+
+        x = x.to(self.device)
+        y = y.to(self.device)
         out = self.model.forward(x)  # forward the data in the model
         loss = F.cross_entropy(out, y)  # compute loss
         _, predicted = torch.max(out.data, 1)  # get argmax of predictions
         accuracy = np.mean(list(predicted.eq(y.data).cpu()))  # compute accuracy
-        return loss.data, accuracy
+        return loss.data.detach().cpu().numpy(), accuracy
 
-    def save_model(self, model_save_dir, model_save_name, model_idx, best_validation_model_idx,
-                   best_validation_model_acc):
+    def save_model(self, model_save_dir, model_save_name, model_idx, state):
         """
         Save the network parameter state and current best val epoch idx and best val accuracy.
         :param model_save_name: Name to use to save model without the epoch index
@@ -152,12 +186,8 @@ class ExperimentBuilder(nn.Module):
         :param best_validation_model_acc: The best validation accuracy to be stored for use at test time.
         :param model_save_dir: The directory to store the state at.
         :param state: The dictionary containing the system state.
-
         """
-        state = dict()
         state['network'] = self.state_dict()  # save network parameter and other variables.
-        state['best_val_model_idx'] = best_validation_model_idx  # save current best val idx
-        state['best_val_model_acc'] = best_validation_model_acc  # save current best val acc
         torch.save(state, f=os.path.join(model_save_dir, "{}_{}".format(model_save_name, str(
             model_idx))))  # save state at prespecified filepath
 
@@ -171,7 +201,7 @@ class ExperimentBuilder(nn.Module):
         """
         state = torch.load(f=os.path.join(model_save_dir, "{}_{}".format(model_save_name, str(model_idx))))
         self.load_state_dict(state_dict=state['network'])
-        return state['best_val_model_idx'], state['best_val_model_acc']
+        return state['best_val_model_idx'], state['best_val_model_acc'], state
 
     def run_experiment(self):
         """
@@ -260,7 +290,7 @@ class ExperimentBuilder(nn.Module):
                         stats_dict=test_losses, current_epoch=0)
 
         return total_losses, test_losses
-
+    
     def convert_h5_to_numpy(self,data,idx,number_batches):
         """
         Get batch data and convert it from h5py to numpy format
@@ -281,6 +311,3 @@ class ExperimentBuilder(nn.Module):
                                            self.image_height, self.image_width))
             y = data.targets[idx*self.batch_size:(idx+1)*self.batch_size]
             return x,y
-        
-    
-    
