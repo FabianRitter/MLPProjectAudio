@@ -1,3 +1,10 @@
 processed_data*	
 .ipynb_checkpoints/*
+MLP_CW2/mlp/__pycache__/__init__.cpython-37.pyc
+MLP_CW2/mlp/__pycache__/data_providers.cpython-37.pyc
+MLP_CW2/mlp/pytorch_experiment_scripts/__pycache__/*
+#       modified:   MLP_CW2/mlp/pytorch_experiment_scripts/__pycache__/arg_extractor.cpython-37.pyc
+#       modified:   MLP_CW2/mlp/pytorch_experiment_scripts/__pycache__/experiment_builder.cpython-37.pyc
+#       modified:   MLP_CW2/mlp/pytorch_experiment_scripts/__pycache__/model_architectures.cpython-37.pyc
+#       modified:   MLP_CW2/mlp/pytorch_experiment_scripts/__pycache__/storage_utils.cpython-37.pyc
 

@@ -250,7 +250,7 @@ class ExperimentBuilder(nn.Module):
             save_statistics(experiment_log_dir=self.experiment_logs, filename='summary.csv',
                             stats_dict=total_losses, current_epoch=i)  # save statistics to stats file.
 
-            # load_statistics(experiment_log_dir=self.experiment_logs, filename='summary.csv') # How to load a csv file if you need to
+            load_statistics(experiment_log_dir=self.experiment_logs, filename='summary.csv') # How to load a csv file if you need to
 
             out_string = "_".join(
                 ["{}_{:.4f}".format(key, np.mean(value)) for key, value in current_epoch_losses.items()])
@@ -286,7 +286,7 @@ class ExperimentBuilder(nn.Module):
         test_losses = {key: [np.mean(value)] for key, value in
                        current_epoch_losses.items()}  # save test set metrics in dict format
         save_statistics(experiment_log_dir=self.experiment_logs, filename='test_summary.csv',
-                        # save test set metrics on disk in .csv format
+                         #save test set metrics on disk in .csv format
                         stats_dict=test_losses, current_epoch=0)
 
         return total_losses, test_losses
