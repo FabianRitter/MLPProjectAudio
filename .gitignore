@@ -1,4 +1,5 @@
 processed_data*	
+slurm*
 .ipynb_checkpoints/*
 MLP_CW2/mlp/__pycache__/__init__.cpython-37.pyc
 MLP_CW2/mlp/__pycache__/data_providers.cpython-37.pyc

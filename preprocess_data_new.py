@@ -10,59 +10,92 @@ import h5py
 
 
 
-
 ####### ARGUMENTS (JUST THE PATH FOR NOW) #######
+#### we have to normalize the amplitude and also the spectrum!! because of the microphones!!
 
+"""
+Train entries: 17585
+
+Test entries: 947
+
+Obs: we will start working with batches using chunking 
+"""
 parser = argparse.ArgumentParser(description='Code for DCASE Challenge task 2.')
 
 parser.add_argument('-p','--params',dest='params_preprocessing',action='store',
                         required=False,type=str)
 
-#parser.add_argument('-e','--expnum',dest='experiment_number', action='store',
-              #          required=False,type=int)
-
+parser.add_argument('-e','--expnum',dest='experiment_number', action='store',
+                        required=False,type=int)
+parser.add_argument('-t','--testing',dest='testing', action='store', required=False, type=str,default=False)
 
 args = parser.parse_args()
+
+
 
 
 if args.params_preprocessing:
     params = yaml.load(open(args.params_preprocessing))
     params_ctrl = params['ctrl']
     path_to_metadata = params_ctrl.get('dataset_path')
-    type_training = params_ctrl.get('type_training')
-    path_to_metadata = '../../real_data/FSDnoisy18k.meta/' + type_training + ".csv"
+    if args.testing:
+        type_training = args.testing
+    else:
+        type_training = params_ctrl.get('type_training')
+    chunk = int(params_ctrl.get('chunk_size'))
+    #maximum_mel = int(params_ctrl.get('maximum_mel'))
+    #minimum_mel = int(params_ctrl.get('minimum_mel'))
+    path_to_metadata = '../../real_data/FSDnoisy18k.meta/' + type_training + "_shuffled.csv"
     base_path = '../../real_data/FSDnoisy18k.audio_' + type_training
+    hdf5_name = "processed_data_" + type_training  +  ".hdf5"
     print('base path is', base_path)
 else:
 #CHANGE PATHS
     path_to_metadata = '../../real_data/FSDnoisy18k.meta/train.csv'
     base_path = '../../real_data/FSDnoisy18k.audio_train'
 
-#if args.experiment_number:
- #   experiment_number= args.experiment_number
-#else:
- #   experiment_number = False
+if args.experiment_number:
+    experiment_number= int(args.experiment_number)
+else:
+    experiment_number = False
+
 
 
 
 df_train = pd.read_csv(path_to_metadata)
+
 fname = df_train['fname'].values
+ 
+
 
 n_mels = 64
-win_length_samples = 512
+n_fft = 1024
 fs= 16000 # we will make downsampling to save some data!!44100
 number_of_frames = fs * 2 # two seconds of data-88200#88200 # they use 88200 
-hop_length_samples = int(win_length_samples / 2)
+hop_length_samples = int(n_fft / 2)
 fmax = int(fs / 2)
 fmin = 0
-n_fft = 1024
 normalize_audio = True
-patch_hop = 50
-patch_len = 100
 spectrogram_type = 'power'
+maximum_mel = 0
 
 
-def normalize_mel_histogram(mel_hist, number_of_frames=100):
+
+if experiment_number and type_training == "train":
+    if experiment_number == 275:
+        fname = fname[chunk * (experiment_number-1): len(df_train['fname'].values) ]
+    else:
+        fname = fname[chunk * (experiment_number-1): chunk * experiment_number]
+    print("the length of fname is", len(fname))
+else:
+    if experiment_number == 15:
+        fname = fname[chunk * (experiment_number-1):len(df_train['fname'].values)]
+    else:
+        fname = fname[chunk * (experiment_number-1): chunk * experiment_number]
+    print('using {0} files for testing data'.format(len(fname)))
+
+
+def normalize_mel_histogram(mel_hist, number_of_frames=32000):
     """
     Return a normalized mel histogram
     
@@ -88,35 +121,30 @@ def normalize_mel_histogram(mel_hist, number_of_frames=100):
     else:
         return mel_hist
     
-def convert2mel(audio,base_path,fs,fmax,n_mels,number_of_frames, counter):
+def convert2mel(audio,base_path,fs, n_fft,fmax,n_mels,number_of_frames):
     """
     Convert raw audio to mel spectrogram
     """
-    if counter % 100:
-        print("Clips processed:",counter)
-        
+    global maximum_mel
+
     path = os.path.join(base_path, audio)
     data, source_fs = soundfile.read(file=path)
     data = data.T
     # Resample if the source_fs is different from expected
     if fs != source_fs:
         data = librosa.core.resample(data, source_fs,fs)
-        #print('Resampling to %d: %s' % (fs, base_path) )
     ### extracted from Eduardo Fonseca Code, it seems there are 3 audio corrupted so we need to check length
-    
-    if len(data) > 0 :
-        data = normalize_amplitude(data)
-    else: 
-        ###### tenemos que ver como borrar estos audios! 
-        data = np.ones((number_of_frames, 1))
-        print('File corrupted. Could not open: %s' % path)
-    
-    mels = melspectrogram(y=data, sr=fs,
+    data = normalize_amplitude(data)
+    mels = melspectrogram(y= data , sr=fs,
                             n_fft=2048, hop_length=hop_length_samples,
                             power=2, n_mels=n_mels,fmax=fmax) 
     mel_normalized = normalize_mel_histogram(mels.T,number_of_frames)
-    mel_norm_flat = mel_normalized.flatten()
-    return mel_norm_flat
+    mel_normalized = (mel_normalized -  np.mean(mel_normalized, axis =0)) / np.amax(mel_normalized) 
+    if mel_normalized.max() > maximum_mel:
+        maximum_mel = mel_normalized.max()
+        
+    return mel_normalized.flatten()
+
 
 
 ##### Amplitude Normalization of audios #########
@@ -131,44 +159,40 @@ def normalize_amplitude(y, tolerance=0.005):
 
 processes = []
 
+#####
 
-#all_inputs = np.zeros([len(fname),n_mels*number_of_frames])
-#if experiment_number == 1:
-hdf5_store = h5py.File("processed_data_train.hdf5", "w")
-#else:
- #   hdf5_store = h5py.File("processed_data_train.hdf5", "a")
+def imprimir(ii,audio,base_path,fs, n_fft,fmax,n_mels,number_of_frames):
+    mel = convert2mel(audio,base_path,fs, n_fft,fmax,n_mels,number_of_frames)
+    if ii == 0:
+        print(mel)
+    return mel
+
+####
+
+if experiment_number == 1:
+    hdf5_store = h5py.File(hdf5_name, "w")
+    #all_inputs = hdf5_store.create_dataset("all_inputs-batch-" + experiment_number, (len(df_train['fname'].values),n_mels*number_of_frames), compression="gzip")
+    all_inputs = hdf5_store.create_dataset("all_inputs" , (len(df_train['fname'].values),n_mels*number_of_frames), chunks= (64, n_mels * number_of_frames)   ,compression="gzip")  
+    dt = h5py.special_dtype(vlen=str)
+    targets = hdf5_store.create_dataset("targets", data = df_train['label'].values, dtype=dt ,compression="gzip")
+    data_processed = [convert2mel(audio,base_path,fs, n_fft,fmax,n_mels,number_of_frames) for ii,audio in enumerate(fname)]
+    all_inputs[chunk * (experiment_number-1) :chunk * experiment_number] = data_processed 
+    if type_training == 'train':
+        manually_verified = hdf5_store.create_dataset("manually_verified", dtype='i1' ,data = df_train['manually_verified'].values, compression="gzip")
+        noisy_small =  hdf5_store.create_dataset("noisy_small", dtype='i1' ,data = df_train['noisy_small'].values, compression="gzip")
+
+else:
+    hdf5_store = h5py.File(hdf5_name, "a")
+    data_processed = [convert2mel(audio,base_path,fs, n_fft,fmax,n_mels,number_of_frames) for ii,audio in enumerate(fname)]
+
+    hdf5_store['all_inputs'][chunk * (experiment_number-1) :chunk * experiment_number] = data_processed
 
 
-all_inputs = hdf5_store.create_dataset("all_inputs", (len(fname),n_mels*number_of_frames), compression="gzip")
-
-all_targets = np.zeros(len(fname))
-
-if type_training == 'train':
-    all_manually = np.zeros(len(fname))
-    all_noisy_small = np.zeros(len(fname))
-
-all_dict = {}
-all_inputs = [convert2mel(audio,base_path,fs,fmax,n_mels,number_of_frames,ii) for ii,audio in enumerate(fname)]                      
-#all_dict['inputs'] = all_inputs
-all_dict['targets'] =  df_train['label']
-
-targets = hdf5_store.create_dataset("targets", data = df_train['label'], compression="gzip")
+print("maximum_mel of batch", maximum_mel)
+print("saving data for experiment" , experiment_number)
 
 
 
-
-if type_training == 'train':
-    #all_dict['manually_verified'] = df_train['manually_verified']
-    #all_dict['noisy_small'] = df_train['noisy_small']
-    manually_verified = hdf5_store.create_dataset("manually_verified", data = df_train['manually_verified'], compression="gzip")
-    noisy_small =  hdf5_store.create_dataset("noisy_small", data = df_train['noisy_small'], compression="gzip")
-
-if experiment_number:
-    print("saving data for experiment" , experiment_number)
-    #path_hdd = "/media/fabian/Seagate Expansion Drive/MLP_EXPERIMENTS/"
-    #np.savez(path_hdd + 'TestData/processed_data-test-{' + str(experiment_number) + "}.npz",**all_dict)
 
 hdf5_store.close()
-
-
 
