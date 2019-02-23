@@ -47,16 +47,18 @@ def save_statistics(experiment_log_dir, filename, stats_dict, current_epoch, sav
 
     return summary_filename
 
-def save_parameters(experiment_name,args):
-
-    now = datetime.datetime.now()
-    
-    file_name = str(experiment_name) + str(now) + '.txt'
-    f = open(file_name,'w')
+def save_parameters(args,experiment_log_dir):
+    """
+    Saves the experiment hyperparameters
+    :param args: input pararameters of the experiment
+    :param experiment_log_dir: the log folder dir filepath 
+    """
+    now = datetime.datetime.now()    
+    filename = str(args.experiment_name) + str(now) + '.txt'
+    summary_filename = os.path.join(experiment_log_dir, filename)
+    f = open(summary_filename,'w')
     f.write(str(args))
-
-    f.close()    
-        
+    f.close()          
 
 
 def load_statistics(experiment_log_dir, filename):
