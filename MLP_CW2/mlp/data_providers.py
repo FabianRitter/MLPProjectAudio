@@ -292,7 +292,11 @@ class AudioDataProvider(DataProvider):
         # construct path to data using os.path.join to ensure the correct path
         # separator for the current platform / OS is used
         # MLP_DATA_DIR environment variable should point to the data directory
+<<<<<<< HEAD
         first_path = "/disk/scratch/s1870525/datasets/"
+=======
+        first_path = os.path.abspath("../MLP_CW2/data/")
+>>>>>>> master
         #first_path = os.path.abspath("/home/jordi/mlp_audio/MLPProjectAudio/MLP_CW2/data")
         data_path = os.path.join(first_path, 'processed_data_{}.hdf5'.format(which_set))
         #data_path = os.path.join(

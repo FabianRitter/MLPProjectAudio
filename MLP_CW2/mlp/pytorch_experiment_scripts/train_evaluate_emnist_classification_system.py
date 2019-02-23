@@ -9,6 +9,11 @@ from mlp.pytorch_experiment_scripts.experiment_builder import ExperimentBuilder
 from mlp.pytorch_experiment_scripts.model_architectures import ConvolutionalNetwork
 import torch
 
+<<<<<<< HEAD
+=======
+from mlp.pytorch_experiment_scripts.storage_utils import save_parameters
+
+>>>>>>> master
 args = get_args()  # get arguments from command line
 rng = np.random.RandomState(seed=args.seed)  # set the seeds for the experiment
 torch.manual_seed(seed=args.seed) # sets pytorch's seed
@@ -19,7 +24,13 @@ num_filters = [int(filt) for filt in args.num_filters[0].split(",")]
 assert len(num_filters) == args.num_layers, "Not specified number of filter per each layer!"
 
 
+<<<<<<< HEAD
 train_data = data_providers.AudioDataProvider('train', batch_size=args.batch_size,
+=======
+save_parameters(args.experiment_name,args)
+
+train_data = data_providers.AudioDataProvider('test', batch_size=args.batch_size,
+>>>>>>> master
                                                rng=rng,shuffle_order=False)  # initialize our rngs using the argument set seed
 val_data = data_providers.AudioDataProvider('test', batch_size=args.batch_size,
                                              rng=rng,shuffle_order=False)  # initialize our rngs using the argument set seed
@@ -43,8 +54,12 @@ conv_experiment = ExperimentBuilder(network_model=custom_conv_net,
                                     test_instances = args.test_instances,
                                     val_instances = args.val_instances,
                                     image_height = args.image_height,
+<<<<<<< HEAD
                                     image_width=args.image_width,
                                     use_cluster = args.use_cluster,
                                     gpu_id=args.gpu_id,
                                     args = args)  # build an experiment object
 experiment_metrics, test_metrics = conv_experiment.run_experiment()  # run experiment and return experiment metrics
+=======
+                                    image_width=args.image_width)  # build an experiment object
+>>>>>>> master
