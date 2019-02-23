@@ -1,5 +1,6 @@
 processed_data*	
 .ipynb_checkpoints/*	
+MLP_CW2/data
 MLP_CW2/.DS_Store
 .DS_Store
 MLP_CW2/mlp/pytorch_experiment_scripts/__pycache__/*
