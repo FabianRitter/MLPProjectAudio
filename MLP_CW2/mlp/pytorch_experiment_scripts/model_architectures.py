@@ -188,6 +188,7 @@ class ConvolutionalNetwork(nn.Module):
         for i in range(self.num_layers):  # for number of layers
 
             out = self.layer_dict['conv_{}'.format(i)](out)  # pass through conv layer indexed at i
+            #print("memory",torch.cuda.memory_allocated())
             out = F.relu(out)  # pass conv outputs through ReLU
             if self.dim_reduction_type == 'strided_convolution':  # if strided convolution dim reduction then
                 out = self.layer_dict['dim_reduction_strided_conv_{}'.format(i)](
