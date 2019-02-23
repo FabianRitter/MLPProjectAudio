@@ -1,0 +1,5 @@
+ctrl:
+  dataset_path: '../../real_data/'
+  type_training: 'val'
+  chunk_size: '64'
+

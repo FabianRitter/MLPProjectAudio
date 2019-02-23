@@ -15,8 +15,11 @@ import h5py
 
 """
 Train entries: 17585
+New train entries with some space for validationL: 17310 -> 271 batches
 
-Test entries: 947
+val set: 275 -> 5 batches
+
+Test entries: 947 -> 15 batches
 
 Obs: we will start working with batches using chunking 
 """
@@ -45,8 +48,11 @@ if args.params_preprocessing:
     chunk = int(params_ctrl.get('chunk_size'))
     #maximum_mel = int(params_ctrl.get('maximum_mel'))
     #minimum_mel = int(params_ctrl.get('minimum_mel'))
-    path_to_metadata = '../../real_data/FSDnoisy18k.meta/' + type_training + "_shuffled.csv"
+    path_to_metadata = '../../real_data/FSDnoisy18k.meta/' + type_training + "_set.csv"
     base_path = '../../real_data/FSDnoisy18k.audio_' + type_training
+    if type_training == 'val':
+    	base_path = '../../real_data/FSDnoisy18k.audio_train'
+
     hdf5_name = "processed_data_" + type_training  +  ".hdf5"
     print('base path is', base_path)
 else:
@@ -82,17 +88,24 @@ maximum_mel = 0
 
 
 if experiment_number and type_training == "train":
-    if experiment_number == 275:
+    if experiment_number == 271:
         fname = fname[chunk * (experiment_number-1): len(df_train['fname'].values) ]
     else:
         fname = fname[chunk * (experiment_number-1): chunk * experiment_number]
     print("the length of fname is", len(fname))
-else:
+elif type_training == "test":
     if experiment_number == 15:
         fname = fname[chunk * (experiment_number-1):len(df_train['fname'].values)]
     else:
         fname = fname[chunk * (experiment_number-1): chunk * experiment_number]
     print('using {0} files for testing data'.format(len(fname)))
+else:
+	if experiment_number = 5:
+		fname = fname[chunk * (experiment_number-1): len(df_train['fname'].values) ]
+	else:
+        fname = fname[chunk * (experiment_number-1): chunk * experiment_number]
+
+
 
 
 def normalize_mel_histogram(mel_hist, number_of_frames=32000):
