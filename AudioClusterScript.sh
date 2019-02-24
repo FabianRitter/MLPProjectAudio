@@ -47,12 +47,17 @@ cd /disk/scratch/${STUDENT_ID}
 
 pwd
 cd MLPProjectAudio
-bash run_experiment_preprocessing.sh
-
+#bash run_experiment_preprocessing.sh
+#mv ../datasets/newpreprocessing/processed_data_eval.hdf5 ../datasets
+#mv ../datasets/newpreprocessing/processed_data_test.hdf5 ../datasets
+#mv ../datasets/newpreprocessing/processed_data_train.hdf5 ../datasets
 python MLP_CW2/mlp/pytorch_experiment_scripts/train_evaluate_emnist_classification_system.py --num_filters 5,5,5 --batch_size 64 --use_gpu True --gpu_id "0,1,2,3" --use_cluster True --num_epochs 100
 
 # recovering data
 
 cp /disk/scratch/${STUDENT_ID}/exp_audio/ /home/${STUDENT_ID}/ExperimentsAudio
-cp /disk/scratch/${STUDENT_ID}/datasets/prepro* /home/${STUDENT_ID}/ExperimentsAudio/data/newpreprocessed
-
+cp /disk/scratch/${STUDENT_ID}/datasets/exp_audio /home/${STUDENT_ID}/ExperimentsAudio
+cp /disk/scratch/${STUDENT_ID}/MLPProjectAudio/exp_audio /home/${STUDENT_ID}/ExperimentsAudio
+#cp /disk/scratch/${STUDENT_ID}/datasets/processed_data_val.hdf5 /home/${STUDENT_ID}/ExperimentsAudio/data/newpreprocessed
+#cp /disk/scratch/${STUDENT_ID}/datasets/processed_data_train.hdf5 /home/${STUDENT_ID}/ExperimentsAudio/data/newpreprocessed
+#cp /disk/scratch/${STUDENT_ID}/datasets/processed_data_test.hdf5 /home/${STUDENT_ID}/ExperimentsAudio/data/newpreprocessed

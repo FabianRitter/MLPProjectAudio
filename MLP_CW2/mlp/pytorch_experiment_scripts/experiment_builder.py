@@ -1,4 +1,3 @@
-
 from torch import nn
 from copy import deepcopy
 import torch
@@ -75,9 +74,9 @@ class ExperimentBuilder(nn.Module):
         self.optimizer = optim.Adam(self.parameters(), amsgrad=False,
                                     weight_decay=weight_decay_coefficient)
         # Generate the directory names
-        self.experiment_folder = os.path.abspath(experiment_name)
-        self.experiment_logs = os.path.abspath(os.path.join(self.experiment_folder, "result_outputs"))
-        self.experiment_saved_models = os.path.abspath(os.path.join(self.experiment_folder, "saved_models"))
+        self.experiment_folder = "/disk/scratch/s1870525/" + experiment_name
+        self.experiment_logs = os.path.join(self.experiment_folder, "result_outputs")
+        self.experiment_saved_models = os.path.join(self.experiment_folder, "saved_models")
         print(self.experiment_folder, self.experiment_logs)
         # Set best models to be at 0 since we are just starting
         self.best_val_model_idx = 0
