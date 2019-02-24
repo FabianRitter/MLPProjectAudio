@@ -48,17 +48,17 @@ if args.params_preprocessing:
     chunk = int(params_ctrl.get('chunk_size'))
     #maximum_mel = int(params_ctrl.get('maximum_mel'))
     #minimum_mel = int(params_ctrl.get('minimum_mel'))
-    path_to_metadata = '../../real_data/FSDnoisy18k.meta/' + type_training + "_set.csv"
-    base_path = '../../real_data/FSDnoisy18k.audio_' + type_training
+    path_to_metadata = '../datasets/FSDnoisy18k.meta/' + type_training + "_set.csv"
+    base_path = '../datasets/FSDnoisy18k.audio_' + type_training
     if type_training == 'val':
-    	base_path = '../../real_data/FSDnoisy18k.audio_train'
+    	base_path = '../datasets/FSDnoisy18k.audio_train'
 
     hdf5_name = "processed_data_" + type_training  +  ".hdf5"
     print('base path is', base_path)
 else:
 #CHANGE PATHS
-    path_to_metadata = '../../real_data/FSDnoisy18k.meta/train.csv'
-    base_path = '../../real_data/FSDnoisy18k.audio_train'
+    path_to_metadata = '../datasets/FSDnoisy18k.meta/train.csv'
+    base_path = '../datasets/FSDnoisy18k.audio_train'
 
 if args.experiment_number:
     experiment_number= int(args.experiment_number)
@@ -100,9 +100,9 @@ elif type_training == "test":
         fname = fname[chunk * (experiment_number-1): chunk * experiment_number]
     print('using {0} files for testing data'.format(len(fname)))
 else:
-	if experiment_number = 5:
-		fname = fname[chunk * (experiment_number-1): len(df_train['fname'].values) ]
-	else:
+    if experiment_number == 5:
+        fname = fname[chunk * (experiment_number-1): len(df_train['fname'].values)]
+    else:
         fname = fname[chunk * (experiment_number-1): chunk * experiment_number]
 
 
@@ -208,4 +208,3 @@ print("saving data for experiment" , experiment_number)
 
 
 hdf5_store.close()
-

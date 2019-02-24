@@ -5,12 +5,11 @@
 #SBATCH --gres=gpu:4
 #SBATCH --mem=12000  # memory in Mb
 #SBATCH --time=0-08:00:00
-#SBATCH --exclude=ladonia[01-20]
 
 
 export CUDA_HOME=/opt/cuda-9.0.176.1/
 export CUDNN_HOME=/opt/cuDNN-7.0/
-export STUDENT_ID=s1870525
+export STUDENT_ID=$(whoami)
 export LD_LIBRARY_PATH=${CUDNN_HOME}/lib64:${CUDA_HOME}/lib64:$LD_LIBRARY_PATH
 export LIBRARY_PATH=${CUDNN_HOME}/lib64:$LIBRARY_PATH
 export CPATH=${CUDNN_HOME}/include:$CPATH
@@ -34,20 +33,26 @@ export CODE_DIR=${TMP}/MLPProjectAudio/
 
 source /home/${STUDENT_ID}/miniconda3/bin/activate mlp
 cd ..
-#print the name of the GPU BOX where the job is running
+##print the name of the GPU BOX where the job is running
 srun hostname
-#
 
 
-# SYnc data in the headnode  with the job's GPU BOX
+
+##  SYnc data in the headnode  with the job's GPU BOX
 rsync -ua --progress /home/${STUDENT_ID}/ExperimentsAudio/data/ /disk/scratch/${STUDENT_ID}/datasets/
 
 rsync -ua --progress /home/${STUDENT_ID}/ExperimentsAudio/MLPProjectAudio/ /disk/scratch/${STUDENT_ID}/MLPProjectAudio
 
-cd /disk/scratch/${STUDENT_ID}/
+cd /disk/scratch/${STUDENT_ID}
 
 pwd
+cd MLPProjectAudio
+bash run_experiment_preprocessing.sh
 
+python MLP_CW2/mlp/pytorch_experiment_scripts/train_evaluate_emnist_classification_system.py --num_filters 5,5,5 --batch_size 64 --use_gpu True --gpu_id "0,1,2,3" --use_cluster True --num_epochs 100
 
-python MLPProjectAudio/MLP_CW2/mlp/pytorch_experiment_scripts/train_evaluate_emnist_classification_system.py --num$
+# recovering data
+
+cp /disk/scratch/${STUDENT_ID}/exp_audio/ /home/${STUDENT_ID}/ExperimentsAudio
+cp /disk/scratch/${STUDENT_ID}/datasets/prepro* /home/${STUDENT_ID}/ExperimentsAudio/data/newpreprocessed
 

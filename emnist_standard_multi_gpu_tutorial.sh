@@ -41,7 +41,7 @@ cd ..
 #print the name of the GPU BOX where the job is running
 srun hostname
 # SYnc data in the headnode  with the job's GPU BOX
-rsync -ua --progress /home/${STUDENT_ID}/ExperimentsAudio/MLPProjectAudio/ /disk/scratch/${STUDENT_ID}/MLPProjectAudio/
+#rsync -ua --progress /home/${STUDENT_ID}/ExperimentsAudio/MLPProjectAudio/ /disk/scratch/${STUDENT_ID}/MLPProjectAudio/
 
 
 #python train_evaluate_emnist_classification_system.py --batch_size 100 --continue_from_epoch -1 --seed 0 \
