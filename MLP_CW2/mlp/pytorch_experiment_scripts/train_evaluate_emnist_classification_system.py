@@ -29,6 +29,10 @@ val_data = data_providers.AudioDataProvider('valid', batch_size=args.batch_size,
 test_data = data_providers.AudioDataProvider('test', batch_size=args.batch_size,
                                               rng=rng,shuffle_order=False)  # initialize our rngs using the argument set seed
 
+
+
+assert train_data.dict_ == val_data.dict_ == test_data.dict_, "Different dictionaries!"
+
 custom_conv_net = ConvolutionalNetwork(  # initialize our network object, in this case a ConvNet
     input_shape=(args.batch_size, args.image_num_channels, args.image_height, args.image_width),
     dim_reduction_type=args.dim_reduction_type,
