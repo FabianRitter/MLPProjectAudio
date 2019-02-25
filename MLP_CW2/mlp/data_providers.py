@@ -318,7 +318,7 @@ class AudioDataProvider(DataProvider):
         keys = np.unique(int_targets)
         keys_sorted = sorted(keys)
         values = np.arange(0,len(keys_sorted))
-        dict_ = dict(zip(keys,values))
+        dict_ = dict(zip(keys_sorted,values))
         targets_int = np.asarray([dict_[tar] for tar in int_targets])
         dict_ = dict_  
         one_of_k_targets = np.zeros((targets_int.shape[0], self.num_classes))
