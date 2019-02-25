@@ -17,7 +17,7 @@ class DataProvider(object):
     """Generic data provider."""
 
     def __init__(self, inputs, targets, batch_size, max_num_batches=-1,
-                 shuffle_order=True, rng=None):
+                 shuffle_order=True, rng=None,dict_ = None):
         """Create a new data provider object.
         Args:
             inputs (ndarray): Array of data input features of shape
@@ -35,6 +35,7 @@ class DataProvider(object):
         """
         self.inputs = inputs
         self.targets = targets
+        self.dict_ = dict_
         if batch_size < 1:
             raise ValueError('batch_size must be >= 1')
         self._batch_size = batch_size
@@ -292,8 +293,9 @@ class AudioDataProvider(DataProvider):
         # construct path to data using os.path.join to ensure the correct path
         # separator for the current platform / OS is used
         # MLP_DATA_DIR environment variable should point to the data directory
-        first_path = "/disk/scratch/s1870525/datasets/"
-        #first_path = os.path.abspath("/home/jordi/mlp_audio/MLPProjectAudio/MLP_CW2/data")
+        #first_path = "/disk/scratch/s1870525/datasets/"
+        first_path = os.path.abspath("/home/jordi/mlp_audio/MLPProjectAudio/MLP_CW2/data")
+        #####data_path = os.path.join(first_path, 'processed_data_{}.hdf5'.format(which_set))
         data_path = os.path.join(first_path, 'processed_data_{}.hdf5'.format(which_set))
         #data_path = os.path.join(
         #    os.environ['MLP_DATA_DIR'], 'processed_data-{0}.npz'.format(which_set))
@@ -302,17 +304,23 @@ class AudioDataProvider(DataProvider):
         )
         # load data from compressed numpy file
         loaded = h5py.File(data_path, 'r')
-        #inputs, targets = loaded['inputs'], loaded['targets']
         inputs = loaded['all_inputs']
         int_targets = loaded['targets'][:]
-        
+            
+        #df=pd.read_csv(data_path)    
+        #keys = df.label.unique()
+        #keys_sorted = sorted(keys)
+        #values = np.arange(0,len(keys_sorted))
+        #dict_ = dict(zip(keys_sorted,values))
+        #inputs = df['fname']
+        #targets_int = np.asarray([dict_[tar] for tar in df['label']])
+
         keys = np.unique(int_targets)
-        values = np.arange(0,len(keys))
+        keys_sorted = sorted(keys)
+        values = np.arange(0,len(keys_sorted))
         dict_ = dict(zip(keys,values))
-      
         targets_int = np.asarray([dict_[tar] for tar in int_targets])
-      
-      
+        dict_ = dict_  
         one_of_k_targets = np.zeros((targets_int.shape[0], self.num_classes))
         one_of_k_targets[range(targets_int.shape[0]),targets_int] = 1
         
@@ -324,7 +332,7 @@ class AudioDataProvider(DataProvider):
         #    inputs = np.reshape(inputs, newshape=(-1, 1, 10, 15))
         # pass the loaded data to the parent class __init__
         super(AudioDataProvider, self).__init__(
-            inputs, targets, batch_size, max_num_batches, shuffle_order, rng)
+            inputs, targets, batch_size, max_num_batches, shuffle_order, rng,dict_)
 
     #def next(self):
         """Returns next data batch or raises `StopIteration` if at end."""
