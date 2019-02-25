@@ -51,7 +51,9 @@ cd MLPProjectAudio
 #mv ../datasets/newpreprocessing/processed_data_eval.hdf5 ../datasets
 #mv ../datasets/newpreprocessing/processed_data_test.hdf5 ../datasets
 #mv ../datasets/newpreprocessing/processed_data_train.hdf5 ../datasets
-python MLP_CW2/mlp/pytorch_experiment_scripts/train_evaluate_emnist_classification_system.py --num_filters 5,5,5 --batch_size 64 --use_gpu True --gpu_id "0,1,2,3" --use_cluster True --num_epochs 100
+
+python MLP_CW2/mlp/pytorch_experiment_scripts/train_evaluate_emnist_classification_system.py --num_filters 24,48,48 --kernel_size 5 --batch_size 64 --use_gpu True --gpu_id "0,1,2,3" --use_cluster True --num_epochs $1
+
 
 # recovering data
 
