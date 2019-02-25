@@ -1,6 +1,8 @@
 from torch import nn
 from copy import deepcopy
 import torch
+import torch.distributed as dist
+from torch.multiprocessing import Process, Queue
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
@@ -13,6 +15,7 @@ import time
 import math
 
 from storage_utils import save_statistics
+from processing import convert2mel
 
 
 class ExperimentBuilder(nn.Module):
@@ -74,7 +77,8 @@ class ExperimentBuilder(nn.Module):
         self.optimizer = optim.Adam(self.parameters(), amsgrad=False,
                                     weight_decay=weight_decay_coefficient)
         # Generate the directory names
-        self.experiment_folder = "/disk/scratch/s1870525/" + experiment_name
+        self.experiment_folder = "/home/jordi/mlp_audio/MLPProjectAudio/MLP_CW2/mlp/" + experiment_name
+        ###self.experiment_folder = "/disk/scratch/s1870525/" + experiment_name
         self.experiment_logs = os.path.join(self.experiment_folder, "result_outputs")
         self.experiment_saved_models = os.path.join(self.experiment_folder, "saved_models")
         print(self.experiment_folder, self.experiment_logs)
@@ -222,7 +226,7 @@ class ExperimentBuilder(nn.Module):
             print("num batches",train_number_batches)
             with tqdm.tqdm(total=train_number_batches) as pbar_train:  # create a progress bar for training
                  for idx in range(train_number_batches):                   
-                    x,y = self.convert_h5_to_numpy(data = self.train_data,
+                    x,y = self.get_mels(data = self.train_data,
                                              idx = idx, number_batches = train_number_batches)                     
                     loss, accuracy = self.run_train_iter(x=x, y=y)  # take a training iter step
                     current_epoch_losses["train_loss"].append(loss)  # add current iter loss to the train loss list
@@ -233,7 +237,7 @@ class ExperimentBuilder(nn.Module):
                         
             with tqdm.tqdm(total=val_number_batches) as pbar_val:  # create a progress bar for validation
                 for idx in range(val_number_batches):
-                    x,y = self.convert_h5_to_numpy(data = self.val_data,
+                    x,y = self.get_mels(data = self.val_data,
                                              idx = idx, number_batches = val_number_batches) 
                     loss, accuracy = self.run_evaluation_iter(x=x, y=y)  # run a validation iter
                     current_epoch_losses["val_loss"].append(loss)  # add current iter loss to val loss list.
@@ -275,7 +279,7 @@ class ExperimentBuilder(nn.Module):
         test_number_batches = int(math.ceil(self.test_instances/self.batch_size))
         with tqdm.tqdm(total=test_number_batches) as pbar_test:  # ini a progress bar
             for idx in range(test_number_batches):  # sample batch
-                x,y = self.convert_h5_to_numpy(data = self.test_data,
+                x,y = self.get_mels(data = self.test_data,
                                          idx = idx, number_batches = test_number_batches) 
                 loss, accuracy = self.run_evaluation_iter(x=x,
                                                           y=y)  # compute loss and accuracy by running an evaluation step
@@ -314,3 +318,31 @@ class ExperimentBuilder(nn.Module):
                                            self.image_height, self.image_width))
             y = data.targets[idx*self.batch_size:(idx+1)*self.batch_size]
             return x,y
+
+    def get_mels(self,data,idx,number_batches):
+        """
+        Get batch data and convert raw audio into mel
+
+>>>>>>> master
+        :param data: {train,validation,test} data
+        :param idx: current batch number
+        :param number_batches: number of batches in set
+        """
+        if idx == number_batches - 1:
+            #x_np = data.inputs[idx*self.batch_size:]
+            list_audio = data.inputs.loc[idx*self.batch_size:].values
+            #processed_audio = [convert2mel(audio) for ii,audio in enumerate(list_audio)]
+            x = np.reshape(processed_audio, newshape=(len(processed_audio),1,
+                                           self.image_height, self.image_width))
+            y = data.targets[idx*self.batch_size:]
+            return x,y
+        else:
+            #x_np = data.inputs[idx*self.batch_size:(idx+1)*self.batch_size]
+            list_audio = data.inputs.loc[idx*self.batch_size:(idx+1)*self.batch_size].values
+            processed_audio = [convert2mel(audio) for ii,audio in enumerate(list_audio)]
+            x = np.reshape(processed_audio, newshape=(self.batch_size,1,
+                                           self.image_height, self.image_width))
+            y = data.targets[idx*self.batch_size:(idx+1)*self.batch_size]
+            return x,y
+        
+     

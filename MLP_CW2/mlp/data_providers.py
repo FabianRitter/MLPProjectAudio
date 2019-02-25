@@ -295,32 +295,30 @@ class AudioDataProvider(DataProvider):
         # MLP_DATA_DIR environment variable should point to the data directory
         #first_path = "/disk/scratch/s1870525/datasets/"
         first_path = os.path.abspath("/home/jordi/mlp_audio/MLPProjectAudio/MLP_CW2/data")
-        #####data_path = os.path.join(first_path, 'processed_data_{}.hdf5'.format(which_set))
-        data_path = os.path.join(first_path, 'processed_data_{}.hdf5'.format(which_set))
-        #data_path = os.path.join(
-        #    os.environ['MLP_DATA_DIR'], 'processed_data-{0}.npz'.format(which_set))
+        ##########data_path = os.path.join(first_path, '{}.csv'.format(which_set))
+        data_path = os.path.join(first_path,"data.csv")
         assert os.path.isfile(data_path), (
             'Data file does not exist at expected path: ' + data_path
         )
         # load data from compressed numpy file
-        loaded = h5py.File(data_path, 'r')
-        inputs = loaded['all_inputs']
-        int_targets = loaded['targets'][:]
+        #loaded = h5py.File(data_path, 'r')
+        #inputs = loaded['all_inputs']
+        #int_targets = loaded['targets'][:]
             
-        #df=pd.read_csv(data_path)    
-        #keys = df.label.unique()
-        #keys_sorted = sorted(keys)
-        #values = np.arange(0,len(keys_sorted))
-        #dict_ = dict(zip(keys_sorted,values))
-        #inputs = df['fname']
-        #targets_int = np.asarray([dict_[tar] for tar in df['label']])
-
-        keys = np.unique(int_targets)
+        df=pd.read_csv(data_path)    
+        keys = df.label.unique()
         keys_sorted = sorted(keys)
         values = np.arange(0,len(keys_sorted))
         dict_ = dict(zip(keys_sorted,values))
-        targets_int = np.asarray([dict_[tar] for tar in int_targets])
-        dict_ = dict_  
+        inputs = df['fname']
+        targets_int = np.asarray([dict_[tar] for tar in df['label']])
+
+        #keys = np.unique(int_targets)
+        #keys_sorted = sorted(keys)
+        #values = np.arange(0,len(keys_sorted))
+        #dict_ = dict(zip(keys_sorted,values))
+        #targets_int = np.asarray([dict_[tar] for tar in int_targets])
+        #dict_ = dict_  
         one_of_k_targets = np.zeros((targets_int.shape[0], self.num_classes))
         one_of_k_targets[range(targets_int.shape[0]),targets_int] = 1
         

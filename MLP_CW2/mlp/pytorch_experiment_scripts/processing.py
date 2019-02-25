@@ -4,7 +4,7 @@ from librosa.feature import melspectrogram
 import pandas as pd
 import soundfile
 import os
-import h5py
+#import h5py
 
 
 def normalize_mel_histogram(mel_hist, number_of_frames=32000):
@@ -41,11 +41,14 @@ def normalize_amplitude(y, tolerance=0.005):
     max_value = max(abs(y)) + tolerance
     return y / max_value
     
-def convert2mel(audio,base_path,fs, n_fft,fmax,n_mels,number_of_frames):
+def convert2mel(audio,fs=16000, n_fft=2048,base_path="/home/jordi/mlp_audio/MLPProjectAudio/MLP_CW2/data/audio",
+                fmax=512,n_mels=2,number_of_frames=2):
     """
     Convert raw audio to mel spectrogram
     """
-    global maximum_mel
+    #global maximum_mel
+    #print(maximum_mel)
+    hop_length_samples = int(n_fft / 2)
 
     path = os.path.join(base_path, audio)
     data, source_fs = soundfile.read(file=path)
@@ -60,8 +63,7 @@ def convert2mel(audio,base_path,fs, n_fft,fmax,n_mels,number_of_frames):
                             power=2, n_mels=n_mels,fmax=fmax) 
     mel_normalized = normalize_mel_histogram(mels.T,number_of_frames)
     mel_normalized = (mel_normalized -  np.mean(mel_normalized, axis =0)) / np.amax(mel_normalized) 
-    if mel_normalized.max() > maximum_mel:
-        maximum_mel = mel_normalized.max()
-        
+    #if mel_normalized.max() > maximum_mel:
+    #    maximum_mel = mel_normalized.max()
     return mel_normalized.flatten()
 
