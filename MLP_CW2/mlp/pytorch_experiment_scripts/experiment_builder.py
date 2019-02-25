@@ -297,7 +297,6 @@ class ExperimentBuilder(nn.Module):
         """
         Get batch data and convert it from h5py to numpy format
 
->>>>>>> master
         :param data: {train,validation,test} data
         :param idx: current batch number
         :param number_batches: number of batches in set

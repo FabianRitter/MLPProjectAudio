@@ -4,7 +4,7 @@
 #SBATCH --partition=Standard
 #SBATCH --gres=gpu:4
 #SBATCH --mem=12000  # memory in Mb
-#SBATCH --time=0-08:00:00
+#SBATCH --time=0-8:00:00
 
 
 export CUDA_HOME=/opt/cuda-9.0.176.1/
@@ -17,7 +17,6 @@ export PATH=${CUDA_HOME}/bin:${PATH}
 export PYTHON_PATH=$PATH
 
 echo ${STUDENT_ID}
-pwd
 
 mkdir -p /disk/scratch/${STUDENT_ID}
 export TMPDIR=/disk/scratch/${STUDENT_ID}/
@@ -30,12 +29,10 @@ export CODE_DIR=${TMP}/MLPProjectAudio/
 
 
 # Activate the relevant virtual environment:
-
+source ~/.bashrc
 source /home/${STUDENT_ID}/miniconda3/bin/activate mlp
 cd ..
 ##print the name of the GPU BOX where the job is running
-srun hostname
-
 
 
 ##  SYnc data in the headnode  with the job's GPU BOX
@@ -43,17 +40,17 @@ rsync -ua --progress /home/${STUDENT_ID}/ExperimentsAudio/data/ /disk/scratch/${
 
 rsync -ua --progress /home/${STUDENT_ID}/ExperimentsAudio/MLPProjectAudio/ /disk/scratch/${STUDENT_ID}/MLPProjectAudio
 
-cd /disk/scratch/${STUDENT_ID}
+ls /home/${STUDENT_ID}/ExperimentsAudio/data/
 
-pwd
+cd /disk/scratch/${STUDENT_ID}
 cd MLPProjectAudio
 #bash run_experiment_preprocessing.sh
 #mv ../datasets/newpreprocessing/processed_data_eval.hdf5 ../datasets
 #mv ../datasets/newpreprocessing/processed_data_test.hdf5 ../datasets
 #mv ../datasets/newpreprocessing/processed_data_train.hdf5 ../datasets
-
-python MLP_CW2/mlp/pytorch_experiment_scripts/train_evaluate_emnist_classification_system.py --num_filters 24,48,48 --kernel_size 5 --batch_size 64 --use_gpu True --gpu_id "0,1,2,3" --use_cluster True --num_epochs $1
-
+echo entrando a python
+python MLP_CW2/mlp/pytorch_experiment_scripts/train_evaluate_emnist_classification_system.py --num_filters 12,24,48 --kernel_size 4 --batch_size 64 --use_gpu True --gpu_id "0,1,2,3" --use_cluster True --num_epochs 20 --training_instances 17310 --val_instances 275
+echo pase python
 
 # recovering data
 
