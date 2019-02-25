@@ -1,10 +1,10 @@
 #!/bin/sh
 #SBATCH -N 1	  # nodes requested
 #SBATCH -n 1	  # tasks requested
-#SBATCH --partition=Standard
+#SBATCH --partition=LongJobs
 #SBATCH --gres=gpu:4
-#SBATCH --mem=12000  # memory in Mb
-#SBATCH --time=0-8:00:00
+#SBATCH --mem=42000  # memory in Mb
+#SBATCH --time=0-18:00:00
 
 
 export CUDA_HOME=/opt/cuda-9.0.176.1/
@@ -19,17 +19,17 @@ export PYTHON_PATH=$PATH
 echo ${STUDENT_ID}
 
 mkdir -p /disk/scratch/${STUDENT_ID}
-export TMPDIR=/disk/scratch/${STUDENT_ID}/
-export TMP=/disk/scratch/${STUDENT_ID}/
+export TMPDIR=/disk/scratch/${STUDENT_ID}
+export TMP=/disk/scratch/${STUDENT_ID}
 
-mkdir -p ${TMP}/datasets/
+mkdir -p ${TMP}/datasets
 export DATASET_DIR=${TMP}/datasets/
-mkdir -p ${TMP}/MLPProjectAudio/
+mkdir -p ${TMP}/MLPProjectAudio
 export CODE_DIR=${TMP}/MLPProjectAudio/
 
 
 # Activate the relevant virtual environment:
-source ~/.bashrc
+#source ~/.bashrc
 source /home/${STUDENT_ID}/miniconda3/bin/activate mlp
 cd ..
 ##print the name of the GPU BOX where the job is running
@@ -44,6 +44,8 @@ ls /home/${STUDENT_ID}/ExperimentsAudio/data/
 
 cd /disk/scratch/${STUDENT_ID}
 cd MLPProjectAudio
+pwd
+echo databse directory ${DATASET_DIR}
 #bash run_experiment_preprocessing.sh
 #mv ../datasets/newpreprocessing/processed_data_eval.hdf5 ../datasets
 #mv ../datasets/newpreprocessing/processed_data_test.hdf5 ../datasets

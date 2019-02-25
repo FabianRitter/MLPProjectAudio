@@ -17,9 +17,9 @@ def get_args():
         description='Welcome to the MLP course\'s Pytorch training and inference helper script')
 
     parser.add_argument('--batch_size', nargs="?", type=int, default=64, help='Batch_size for experiment')
-    parser.add_argument('--training_instances', nargs="?", type=int, default=17585, help='Number of training instances')
+    parser.add_argument('--training_instances', nargs="?", type=int, default=17310, help='Number of training instances')
     parser.add_argument('--test_instances', nargs="?", type=int, default=947, help='Number of test instances')
-    parser.add_argument('--val_instances', nargs="?", type=int, default=947, help='Number of validation instances')
+    parser.add_argument('--val_instances', nargs="?", type=int, default=275, help='Number of validation instances')
     parser.add_argument('--continue_from_epoch', nargs="?", type=int, default=-1, help='Batch_size for experiment')
     parser.add_argument('--seed', nargs="?", type=int, default=7112018,
                         help='Seed to use for random number generator for experiment')

@@ -17,7 +17,7 @@ class DataProvider(object):
     """Generic data provider."""
 
     def __init__(self, inputs, targets, batch_size, max_num_batches=-1,
-                 shuffle_order=True, rng=None):#,dict_ = None):
+                 shuffle_order=True, rng=None,dict_ = None):
         """Create a new data provider object.
         Args:
             inputs (ndarray): Array of data input features of shape
@@ -35,7 +35,7 @@ class DataProvider(object):
         """
         self.inputs = inputs
         self.targets = targets
-        #self.dict_ = dict_
+        self.dict_ = dict_
         if batch_size < 1:
             raise ValueError('batch_size must be >= 1')
         self._batch_size = batch_size
@@ -306,10 +306,10 @@ class AudioDataProvider(DataProvider):
         )
         # load data from compressed numpy file
         print("estamos en el data providers antes del loaded h5py.File")
-        loaded = h5py.File(data_path, 'r')
+        with h5py.File(data_path, 'r') as f:
+            inputs = f['all_inputs']
+            int_targets = f['targets'][:]
         print("despues del loaded h5py")
-        inputs = loaded['all_inputs']
-        int_targets = loaded['targets'][:]
             
         #df=pd.read_csv(data_path)    
         #keys = df.label.unique()
@@ -324,7 +324,7 @@ class AudioDataProvider(DataProvider):
         values = np.arange(0,len(keys_sorted))
         dict_ = dict(zip(keys_sorted,values))
         targets_int = np.asarray([dict_[tar] for tar in int_targets])
-        #dict_ = dict_  
+        dict_ = dict_  
         one_of_k_targets = np.zeros((targets_int.shape[0], self.num_classes))
         one_of_k_targets[range(targets_int.shape[0]),targets_int] = 1
         targets = one_of_k_targets
@@ -335,7 +335,7 @@ class AudioDataProvider(DataProvider):
         #    inputs = np.reshape(inputs, newshape=(-1, 1, 10, 15))
         # pass the loaded data to the parent class __init__
         super(AudioDataProvider, self).__init__(
-            inputs, targets, batch_size, max_num_batches, shuffle_order, rng)#,dict_)
+            inputs, targets, batch_size, max_num_batches, shuffle_order, rng,dict_)
 
     #def next(self):
         """Returns next data batch or raises `StopIteration` if at end."""
