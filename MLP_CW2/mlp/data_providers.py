@@ -306,6 +306,9 @@ class AudioDataProvider(DataProvider):
         )
         # load data from compressed numpy file
         print("estamos en el data providers antes del loaded h5py.File")
+        #loaded = h5py.File(data_path, 'r')
+        #inputs = loaded['all_inputs']
+        #int_targets = loaded['targets'][:]
         with h5py.File(data_path, 'r') as f:
             inputs = f['all_inputs']
             int_targets = f['targets'][:]
