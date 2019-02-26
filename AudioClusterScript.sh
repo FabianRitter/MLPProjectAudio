@@ -3,8 +3,8 @@
 #SBATCH -n 1	  # tasks requested
 #SBATCH --partition=LongJobs
 #SBATCH --gres=gpu:4
-#SBATCH --mem=42000  # memory in Mb
-#SBATCH --time=0-18:00:00
+#SBATCH --mem=48000  # memory in Mb
+#SBATCH --time=0-38:00:00
 
 
 export CUDA_HOME=/opt/cuda-9.0.176.1/
@@ -28,6 +28,13 @@ mkdir -p ${TMP}/MLPProjectAudio
 export CODE_DIR=${TMP}/MLPProjectAudio/
 
 
+if [ $# != 1 ]; then
+echo "Usage: sbatch AudioClusterScript.sh <experiment_number>"
+exit 1;
+fi
+number=$1
+
+
 # Activate the relevant virtual environment:
 #source ~/.bashrc
 source /home/${STUDENT_ID}/miniconda3/bin/activate mlp
@@ -35,8 +42,9 @@ cd ..
 ##print the name of the GPU BOX where the job is running
 
 
+
 ##  SYnc data in the headnode  with the job's GPU BOX
-rsync -ua --progress /home/${STUDENT_ID}/ExperimentsAudio/data/ /disk/scratch/${STUDENT_ID}/datasets/
+rsync -ua --progress /home/${STUDENT_ID}/ExperimentsAudio/data/ ${DATASET_DIR}
 
 rsync -ua --progress /home/${STUDENT_ID}/ExperimentsAudio/MLPProjectAudio/ /disk/scratch/${STUDENT_ID}/MLPProjectAudio
 
@@ -51,14 +59,15 @@ echo databse directory ${DATASET_DIR}
 #mv ../datasets/newpreprocessing/processed_data_test.hdf5 ../datasets
 #mv ../datasets/newpreprocessing/processed_data_train.hdf5 ../datasets
 echo entrando a python
-python MLP_CW2/mlp/pytorch_experiment_scripts/train_evaluate_emnist_classification_system.py --num_filters 12,24,48 --kernel_size 4 --batch_size 64 --use_gpu True --gpu_id "0,1,2,3" --use_cluster True --num_epochs 20 --training_instances 17310 --val_instances 275
+python MLP_CW2/mlp/pytorch_experiment_scripts/train_evaluate_emnist_classification_system.py --num_layers 5 --num_filters 12,24,48,48,24 --kernel_size 3 --batch_size 64 --use_gpu True --gpu_id "0,1,2,3" --use_cluster True --num_epochs 20 --training_instances 17310 --val_instances 275 --experiment_name exp_audio_${number}
 echo pase python
 
 # recovering data
 
-cp /disk/scratch/${STUDENT_ID}/exp_audio/ /home/${STUDENT_ID}/ExperimentsAudio
-cp /disk/scratch/${STUDENT_ID}/datasets/exp_audio /home/${STUDENT_ID}/ExperimentsAudio
-cp /disk/scratch/${STUDENT_ID}/MLPProjectAudio/exp_audio /home/${STUDENT_ID}/ExperimentsAudio
+cp /disk/scratch/${STUDENT_ID}/exp_audio_${number} /home/${STUDENT_ID}/ExperimentsAudio
+cp /disk/scratch/${STUDENT_ID}/datasets/exp_audio_${number} /home/${STUDENT_ID}/ExperimentsAudio
+cp /disk/scratch/${STUDENT_ID}/MLPProjectAudio/exp_audio_${number} /home/${STUDENT_ID}/ExperimentsAudio
+cp /disk/scratch/s1870525/datasets/experiment_config.txt /home/${STUDENT_ID}/ExpermentsAudio/exp_audio_${number}
 #cp /disk/scratch/${STUDENT_ID}/datasets/processed_data_val.hdf5 /home/${STUDENT_ID}/ExperimentsAudio/data/newpreprocessed
 #cp /disk/scratch/${STUDENT_ID}/datasets/processed_data_train.hdf5 /home/${STUDENT_ID}/ExperimentsAudio/data/newpreprocessed
 #cp /disk/scratch/${STUDENT_ID}/datasets/processed_data_test.hdf5 /home/${STUDENT_ID}/ExperimentsAudio/data/newpreprocessed

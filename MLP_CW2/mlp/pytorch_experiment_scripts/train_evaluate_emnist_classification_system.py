@@ -35,7 +35,7 @@ test_data = data_providers.AudioDataProvider('test', batch_size=args.batch_size,
 print("test ok")
 
 
-#assert train_data.dict_ == val_data.dict_ == test_data.dict_, "Different dictionaries!"
+assert train_data.dict_ == val_data.dict_ == test_data.dict_, "Different dictionaries!"
 
 print("second assert!!!")
 
@@ -61,3 +61,11 @@ conv_experiment = ExperimentBuilder(network_model=custom_conv_net,
                                     gpu_id=args.gpu_id,
                                     args = args)  # build an experiment object
 experiment_metrics, test_metrics = conv_experiment.run_experiment()  # run experiment and return experiment metrics
+f=open("/disk/scratch/s1870525/datasets/experiment_config.txt", "a+")
+f.write("network caracteristics")
+f.write("num epochs %s \n", % args.num_epochs)
+f.write("weight decay %s \n" , %args.weight_decay_coefficients)
+fwrite("kernel size %s \n", %args.kernel_size)
+fwrite("num layers %s \n" , % args.num_layers)
+fwrite("num filters %s \n" , % args.num_filters)
+f.close()

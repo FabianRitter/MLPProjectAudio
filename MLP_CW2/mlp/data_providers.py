@@ -319,10 +319,10 @@ class AudioDataProvider(DataProvider):
         #keys_sorted = sorted(keys)
         #values = np.arange(0,len(keys_sorted))
         #dict_ = dict(zip(keys_sorted,values))
-        #inputs = df['fname']
         #targets_int = np.asarray([dict_[tar] for tar in df['label']])
         print("antes del sorting en data providers")
         keys = np.unique(int_targets)
+        print("printing the keys of labels," + keys)
         keys_sorted = sorted(keys)
         values = np.arange(0,len(keys_sorted))
         dict_ = dict(zip(keys_sorted,values))
@@ -332,9 +332,6 @@ class AudioDataProvider(DataProvider):
         one_of_k_targets[range(targets_int.shape[0]),targets_int] = 1
         targets = one_of_k_targets
         print("si ya pasa aca estamos ok!")
-        #if flatten:
-        #    inputs = np.reshape(inputs, newshape=(-1, 64*32000))
-        #else:
         #    inputs = np.reshape(inputs, newshape=(-1, 1, 10, 15))
         # pass the loaded data to the parent class __init__
         super(AudioDataProvider, self).__init__(
