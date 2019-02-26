@@ -1,10 +1,10 @@
 #!/bin/sh
 #SBATCH -N 1	  # nodes requested
 #SBATCH -n 1	  # tasks requested
-#SBATCH --partition=LongJobs
+#SBATCH --partition=Standard
 #SBATCH --gres=gpu:4
-#SBATCH --mem=48000  # memory in Mb
-#SBATCH --time=0-38:00:00
+#SBATCH --mem=49000  # memory in Mb
+#SBATCH --time=0-8:00:00
 
 
 export CUDA_HOME=/opt/cuda-9.0.176.1/

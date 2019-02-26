@@ -17,7 +17,7 @@ class DataProvider(object):
     """Generic data provider."""
 
     def __init__(self, inputs, targets, batch_size, max_num_batches=-1,
-                 shuffle_order=True, rng=None,dict_ = None):
+                 shuffle_order=False, rng=None,dict_ = None, data_size=17310):
         """Create a new data provider object.
         Args:
             inputs (ndarray): Array of data input features of shape
@@ -36,15 +36,16 @@ class DataProvider(object):
         self.inputs = inputs
         self.targets = targets
         self.dict_ = dict_
+        self.data_size = data_size
         if batch_size < 1:
             raise ValueError('batch_size must be >= 1')
         self._batch_size = batch_size
         if max_num_batches == 0 or max_num_batches < -1:
             raise ValueError('max_num_batches must be -1 or > 0')
         self._max_num_batches = max_num_batches
-        self._update_num_batches()
         self.shuffle_order = shuffle_order
-        self._current_order = np.arange(inputs.shape[0])
+        self._update_num_batches()
+        self._current_order = np.arange(data_size)
         if rng is None:
             rng = np.random.RandomState(DEFAULT_SEED)
         self.rng = rng
@@ -79,7 +80,7 @@ class DataProvider(object):
         # maximum possible number of batches is equal to number of whole times
         # batch_size divides in to the number of data points which can be
         # found using integer division
-        possible_num_batches = self.inputs.shape[0] // self.batch_size
+        possible_num_batches = self.data_size // self.batch_size
         if self.max_num_batches == -1:
             self.num_batches = possible_num_batches
         else:
@@ -113,10 +114,10 @@ class DataProvider(object):
 
     def shuffle(self):
         """Randomly shuffles order of data."""
-        perm = self.rng.permutation(self.inputs.shape[0])
-        self._current_order = self._current_order[perm]
-        self.inputs = self.inputs[perm]
-        self.targets = self.targets[perm]
+        #perm = self.rng.permutation(data_size)
+        #self._current_order = self._current_order[perm]
+        #self.inputs = self.inputs[perm]
+        #self.targets = self.targets[perm]
 
     def next(self):
         """Returns next data batch or raises `StopIteration` if at end."""
@@ -288,8 +289,17 @@ class AudioDataProvider(DataProvider):
             'Expected which_set to be either train, valid or eval. '
             'Got {0}'.format(which_set)
         )
+
+
+
         self.which_set = which_set
         self.num_classes = 20
+        if which_set == "train":
+            data_size=17310
+        if which_set == "test":
+            data_size=947
+        if which_set == "valid":
+            data_size = 275
         # construct path to data using os.path.join to ensure the correct path
         # separator for the current platform / OS is used
         # MLP_DATA_DIR environment variable should point to the data directory
@@ -313,7 +323,7 @@ class AudioDataProvider(DataProvider):
             inputs = f['all_inputs']
             int_targets = f['targets'][:]
         print("despues del loaded h5py")
-            
+        print('checking inuputs', inputs)    
         #df=pd.read_csv(data_path)    
         #keys = df.label.unique()
         #keys_sorted = sorted(keys)
@@ -335,7 +345,7 @@ class AudioDataProvider(DataProvider):
         #    inputs = np.reshape(inputs, newshape=(-1, 1, 10, 15))
         # pass the loaded data to the parent class __init__
         super(AudioDataProvider, self).__init__(
-            inputs, targets, batch_size, max_num_batches, shuffle_order, rng,dict_)
+            inputs, targets, batch_size, max_num_batches, shuffle_order, rng, dict_, data_size)
 
     #def next(self):
         """Returns next data batch or raises `StopIteration` if at end."""
