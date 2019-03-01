@@ -7,7 +7,7 @@ import argparse
 import yaml
 import os
 import h5py
-from utils/preprocessing import normalize_mel_histogram, convert2mel, normalize_amplitude, windowing
+from utils.preprocessing import normalize_mel_histogram, convert2mel, normalize_amplitude, windowing
 
 
 
@@ -62,7 +62,7 @@ fs= 32000 # we will make downsampling to save some data!!44100
 n_fft = 2048
 windows_size_s = 30 # 30 milisecons windowing (to have more context)
 windows_size_f = (windows_size_s * fs ) // 1000  # int division # 960 samples
-hop_length_samples = int(winwod_size_f // 2) ## 480 samples
+hop_length_samples = int(windows_size_f // 2) ## 480 samples
 number_of_frames = fs * 2 # deprecated, use short audio in database already
 fmax = int(fs / 2)
 fmin = 0

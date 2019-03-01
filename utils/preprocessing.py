@@ -52,17 +52,17 @@ def convert2mel(audio,base_path,fs, n_fft,fmax,n_mels,hop_length_samples, window
     ### extracted from Eduardo Fonseca Code, it seems there are 3 audio corrupted so we need to check length
     data = normalize_amplitude(data)
 
-    powSpectrum = np.abs(stft(data,n_fft,hop_length = hop_length_samples, win_lenght = win, window = 'hamming', center=True, dtype=<class 'numpy.complex64'>, pad_mode='reflect'))**2
+    powSpectrum = np.abs(stft(data,n_fft,hop_length = hop_length_samples, win_length = window_lenght, window = 'hamming', center=True, pad_mode='reflect'))**2
 
-    mels = melspectrogram(y= None,n_fft=n_fft ,sr=fs ,S= powSpectrum, hop_length= hop_length_samples ,n_mels=n_mels,fmax=fmax , fmin = 0.0)
-    mel_normalized = (mels -  np.mean(mels, axis =1)) / np.amax(mels)
-    if mel_normalized.max() > maximum_mel:
-        maximum_mel = mel_normalized.max()
+    mels = melspectrogram(y= None,n_fft=n_fft ,sr=fs ,S= powSpectrum, hop_length= hop_length_samples ,n_mels=n_mels,fmax=fmax , fmin = 0.0).T
+    mel_normalized = (mels -  np.mean(mels, axis =0)) / np.amax(mels)
+    #if mel_normalized.max() > maximum_mel:
+    #    maximum_mel = mel_normalized.max()
     #to make it to db... we can add a mfcc optional
     #librosa.core.power_to_db(S, ref=1.0, amin=1e-10, top_db=80.0)[source]
 
 
-    return mel_normalized.flatten()
+    return mel_normalized.T
 
 ##### Amplitude Normalization of audios #########
 
