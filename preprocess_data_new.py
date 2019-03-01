@@ -48,17 +48,13 @@ if args.params_preprocessing:
     chunk = int(params_ctrl.get('chunk_size'))
     #maximum_mel = int(params_ctrl.get('maximum_mel'))
     #minimum_mel = int(params_ctrl.get('minimum_mel'))
-    path_to_metadata = '../datasets/FSDnoisy18k.meta/' + type_training + "_set.csv"
-    base_path = '../datasets/FSDnoisy18k.audio_' + type_training
+    path_to_metadata = '../datasets/' + type_training + "_set.csv"
+    base_path = '../datasets/' + type_training
     if type_training == 'val':
-    	base_path = '../datasets/FSDnoisy18k.audio_train'
+    	base_path = '../datasets/train'
 
     hdf5_name = "processed_data_" + type_training  +  ".hdf5"
     print('base path is', base_path)
-else:
-#CHANGE PATHS
-    path_to_metadata = '../datasets/FSDnoisy18k.meta/train.csv'
-    base_path = '../datasets/FSDnoisy18k.audio_train'
 
 if args.experiment_number:
     experiment_number= int(args.experiment_number)
@@ -66,13 +62,10 @@ else:
     experiment_number = False
 
 
-
-
 df_train = pd.read_csv(path_to_metadata)
 
 fname = df_train['fname'].values
  
-
 
 n_mels = 64
 n_fft = 1024
