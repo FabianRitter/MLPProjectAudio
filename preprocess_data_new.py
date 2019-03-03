@@ -7,7 +7,7 @@ import argparse
 import yaml
 import os
 import h5py
-from utils.preprocessing import normalize_mel_histogram, convert2mel, normalize_amplitude, windowing
+from utils.preprocessing import convert2mel, normalize_amplitude, windowing
 
 
 
@@ -57,18 +57,19 @@ df_train = pd.read_csv(path_to_metadata)
 fname = df_train['fname'].values
 
 n_mels = 96
-audio_duration = 2000 # 2 seconds
 fs= 32000 # we will make downsampling to save some data!!44100
-n_fft = 2048
-windows_size_s = 30 # 30 milisecons windowing (to have more context)
+n_fft = 1024
+windows_size_s = 35 # 30 milisecons windowing (to have more context)
 windows_size_f = (windows_size_s * fs ) // 1000  # int division # 960 samples
 hop_length_samples = int(windows_size_f // 2) ## 480 samples
-number_of_frames = fs * 2 # deprecated, use short audio in database already
+audio_duration = round(len(data) / fs,2)  # 2 seconds
+number_of_frames = fs * audio_duration # deprecated, use short audio in database already
 fmax = int(fs / 2)
 fmin = 0
 normalize_audio = True
 spectrogram_type = 'power'
 maximum_mel = 0
+
 
 if experiment_number and type_training == "train":
     if experiment_number == 271:
@@ -109,8 +110,6 @@ else:
     hdf5_store['all_inputs'][chunk * (experiment_number-1) :chunk * experiment_number,1] = data_processed
 print("maximum_mel is", maximum_mel)
 print("saving data for experiment" , experiment_number)
-
-
 
 
 hdf5_store.close()

@@ -11,32 +11,6 @@ Functions for the pre processing
 
 """
 
-def normalize_mel_histogram(mel_hist, number_of_frames=32000):
-    """
-    Return a normalized mel histogram
-
-    mel_hist:
-    number_of_frames: number of frames to be normalized
-    """
-
-    if mel_hist.shape[0] > number_of_frames:
-        return np.delete(mel_hist,
-                         np.arange(number_of_frames, mel_hist.shape[0]),
-                         axis=0)
-
-    elif mel_hist.shape[0] < number_of_frames:
-        mul = int(round(number_of_frames / mel_hist.shape[0], 0)) + 1
-        repeated_matrix = np.tile(mel_hist.T, mul).T
-
-        if repeated_matrix.shape[0] > number_of_frames:
-            return np.delete(repeated_matrix,
-                             np.arange(number_of_frames, repeated_matrix.shape[0]),
-                             axis=0)
-        return repeated_matrix
-
-    else:
-        return mel_hist
-
 def convert2mel(audio,base_path,fs, n_fft,fmax,n_mels,hop_length_samples, window_lenght):
     """
     Convert raw audio to mel spectrogram
@@ -44,25 +18,25 @@ def convert2mel(audio,base_path,fs, n_fft,fmax,n_mels,hop_length_samples, window
     global maximum_mel
 
     path = os.path.join(base_path, audio)
-    data, source_fs = soundfile.read(file=path)
-    data = data.T
+    data, _ = librosa.core.load(path, sr=fs, res_type="kaiser_best")
+
     # Resample if the source_fs is different from expected
-    if fs != source_fs:
-        data = librosa.core.resample(data, source_fs,fs)
+    #if fs != source_fs:
+    #    data = librosa.core.resample(data, source_fs,fs)
     ### extracted from Eduardo Fonseca Code, it seems there are 3 audio corrupted so we need to check length
     data = normalize_amplitude(data)
 
     powSpectrum = np.abs(stft(data,n_fft,hop_length = hop_length_samples, win_length = window_lenght, window = 'hamming', center=True, pad_mode='reflect'))**2
 
     mels = melspectrogram(y= None,n_fft=n_fft ,sr=fs ,S= powSpectrum, hop_length= hop_length_samples ,n_mels=n_mels,fmax=fmax , fmin = 0.0).T
-    mel_normalized = (mels -  np.mean(mels, axis =0)) / np.amax(mels)
+    #mel_normalized = (mels -  np.mean(mels, axis =0)) / np.amax(mels)
     #if mel_normalized.max() > maximum_mel:
     #    maximum_mel = mel_normalized.max()
     #to make it to db... we can add a mfcc optional
-    #librosa.core.power_to_db(S, ref=1.0, amin=1e-10, top_db=80.0)[source]
+    mels = librosa.core.power_to_db(mels, ref=np.min(mels))
+    mels = mels / np.max(mels)
 
-
-    return mel_normalized.T
+    return mels.T
 
 ##### Amplitude Normalization of audios #########
 
