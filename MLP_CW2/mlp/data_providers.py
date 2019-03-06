@@ -114,10 +114,10 @@ class DataProvider(object):
 
     def shuffle(self):
         """Randomly shuffles order of data."""
-        #perm = self.rng.permutation(data_size)
-        #self._current_order = self._current_order[perm]
-        #self.inputs = self.inputs[perm]
-        #self.targets = self.targets[perm]
+        perm = self.rng.permutation(data_size)
+        self._current_order = self._current_order[perm]
+        self.inputs = self.inputs[perm]
+        self.targets = self.targets[perm]
 
     def next(self):
         """Returns next data batch or raises `StopIteration` if at end."""
@@ -180,6 +180,8 @@ class EMNISTDataProvider(DataProvider):
         # pass the loaded data to the parent class __init__
         super(EMNISTDataProvider, self).__init__(
             inputs, targets, batch_size, max_num_batches, shuffle_order, rng)
+    def __len__(self):
+        return self.num_batches
 
     def next(self):
         """Returns next data batch or raises `StopIteration` if at end."""
@@ -304,35 +306,23 @@ class AudioDataProvider(DataProvider):
         # separator for the current platform / OS is used
         # MLP_DATA_DIR environment variable should point to the data directory
         first_path = "/disk/scratch/s1870525/datasets/"
-        
-        #first_path = os.path.abspath("/home/jordi/mlp_audio/MLPProjectAudio/MLP_CW2/data")
-        #####data_path = os.path.join(first_path, 'processed_data_{}.hdf5'.format(which_set))
-        print("I am about to read stuffs...")
         data_path = os.path.join(first_path, 'processed_data_{}.hdf5'.format(which_set))
-        #data_path = os.path.join(
-        #    os.environ['MLP_DATA_DIR'], 'processed_data-{0}.npz'.format(which_set))
         assert os.path.isfile(data_path), (
             'Data file does not exist at expected path: ' + data_path
         )
-        # load data from compressed numpy file
-        print("estamos en el data providers antes del loaded h5py.File")
-        #loaded = h5py.File(data_path, 'r')
-        #inputs = loaded['all_inputs']
-        #int_targets = loaded['targets'][:]
-        with h5py.File(data_path, 'r') as f:
-            inputs = f['all_inputs']
-            int_targets = f['targets'][:]
-        print("despues del loaded h5py")
-        print('checking inuputs', inputs)    
+        loaded = h5py.File(data_path, 'r')
+        inputs = loaded['all_inputs']
+        int_targets = loaded['targets'][:]
+        #with h5py.File(data_path, 'r') as f:
+         #   inputs = f['all_inputs']
+          #  int_targets = f['targets'][:]
         #df=pd.read_csv(data_path)    
         #keys = df.label.unique()
         #keys_sorted = sorted(keys)
         #values = np.arange(0,len(keys_sorted))
         #dict_ = dict(zip(keys_sorted,values))
         #targets_int = np.asarray([dict_[tar] for tar in df['label']])
-        print("antes del sorting en data providers")
         keys = np.unique(int_targets)
-        print("printing the keys of labels," + keys)
         keys_sorted = sorted(keys)
         values = np.arange(0,len(keys_sorted))
         dict_ = dict(zip(keys_sorted,values))
@@ -341,132 +331,16 @@ class AudioDataProvider(DataProvider):
         one_of_k_targets = np.zeros((targets_int.shape[0], self.num_classes))
         one_of_k_targets[range(targets_int.shape[0]),targets_int] = 1
         targets = one_of_k_targets
-        print("si ya pasa aca estamos ok!")
-        #    inputs = np.reshape(inputs, newshape=(-1, 1, 10, 15))
         # pass the loaded data to the parent class __init__
         super(AudioDataProvider, self).__init__(
             inputs, targets, batch_size, max_num_batches, shuffle_order, rng, dict_, data_size)
+    def __len__(self):
+        return self.num_batches
 
-    #def next(self):
+    def next(self):
         """Returns next data batch or raises `StopIteration` if at end."""
-    #    inputs_batch, targets_batch = super(AudioDataProvider, self).next()
-    #    return inputs_batch, self.to_one_of_k(targets_batch)
-
-    #def to_one_of_k(self, int_targets):
-        """Converts integer coded class target to 1 of K coded targets.
-        Args:
-            int_targets (ndarray): Array of integer coded class targets (i.e.
-                where an integer from 0 to `num_classes` - 1 is used to
-                indicate which is the correct class). This should be of shape
-                (num_data,).
-        Returns:
-            Array of 1 of K coded targets i.e. an array of shape
-            (num_data, num_classes) where for each row all elements are equal
-            to zero except for the column corresponding to the correct class
-            which is equal to one.
-        """
-        
-    #    keys = np.unique(int_targets)
-    #    values = np.arange(0,len(keys))
-    #   dict_ = dict(zip(keys,values))
-    #   
-    #   targets_int = np.asarray([dict_[tar] for tar in int_targets])
-    #   
-    #   
-    #   one_of_k_targets = np.zeros((targets_int.shape[0], self.num_classes))
-    #   one_of_k_targets[range(targets_int.shape[0]),targets_int] = 1
-    #   return one_of_k_targets
-
-class MetOfficeDataProvider(DataProvider):
-    """South Scotland Met Office weather data provider."""
-
-    def __init__(self, window_size, batch_size=10, max_num_batches=-1,
-                 shuffle_order=True, rng=None):
-        """Create a new Met Office data provider object.
-        Args:
-            window_size (int): Size of windows to split weather time series
-               data into. The constructed input features will be the first
-               `window_size - 1` entries in each window and the target outputs
-               the last entry in each window.
-            batch_size (int): Number of data points to include in each batch.
-            max_num_batches (int): Maximum number of batches to iterate over
-                in an epoch. If `max_num_batches * batch_size > num_data` then
-                only as many batches as the data can be split into will be
-                used. If set to -1 all of the data will be used.
-            shuffle_order (bool): Whether to randomly permute the order of
-                the data before each epoch.
-            rng (RandomState): A seeded random number generator.
-        """
-        data_path = os.path.join(
-            os.environ['MLP_DATA_DIR'], 'HadSSP_daily_qc.txt')
-        assert os.path.isfile(data_path), (
-            'Data file does not exist at expected path: ' + data_path
-        )
-        raw = np.loadtxt(data_path, skiprows=3, usecols=range(2, 32))
-        assert window_size > 1, 'window_size must be at least 2.'
-        self.window_size = window_size
-        # filter out all missing datapoints and flatten to a vector
-        filtered = raw[raw >= 0].flatten()
-        # normalise data to zero mean, unit standard deviation
-        mean = np.mean(filtered)
-        std = np.std(filtered)
-        normalised = (filtered - mean) / std
-        # create a view on to array corresponding to a rolling window
-        shape = (normalised.shape[-1] - self.window_size + 1, self.window_size)
-        strides = normalised.strides + (normalised.strides[-1],)
-        windowed = np.lib.stride_tricks.as_strided(
-            normalised, shape=shape, strides=strides)
-        # inputs are first (window_size - 1) entries in windows
-        inputs = windowed[:, :-1]
-        # targets are last entry in windows
-        targets = windowed[:, -1]
-        super(MetOfficeDataProvider, self).__init__(
-            inputs, targets, batch_size, max_num_batches, shuffle_order, rng)
-
-class CCPPDataProvider(DataProvider):
-
-    def __init__(self, which_set='train', input_dims=None, batch_size=10,
-                 max_num_batches=-1, shuffle_order=True, rng=None):
-        """Create a new Combined Cycle Power Plant data provider object.
-        Args:
-            which_set: One of 'train' or 'valid'. Determines which portion of
-                data this object should provide.
-            input_dims: Which of the four input dimension to use. If `None` all
-                are used. If an iterable of integers are provided (consisting
-                of a subset of {0, 1, 2, 3}) then only the corresponding
-                input dimensions are included.
-            batch_size (int): Number of data points to include in each batch.
-            max_num_batches (int): Maximum number of batches to iterate over
-                in an epoch. If `max_num_batches * batch_size > num_data` then
-                only as many batches as the data can be split into will be
-                used. If set to -1 all of the data will be used.
-            shuffle_order (bool): Whether to randomly permute the order of
-                the data before each epoch.
-            rng (RandomState): A seeded random number generator.
-        """
-        data_path = os.path.join(
-            os.environ['MLP_DATA_DIR'], 'ccpp_data.npz')
-        assert os.path.isfile(data_path), (
-            'Data file does not exist at expected path: ' + data_path
-        )
-        # check a valid which_set was provided
-        assert which_set in ['train', 'valid'], (
-            'Expected which_set to be either train or valid '
-            'Got {0}'.format(which_set)
-        )
-        # check input_dims are valid
-        if not input_dims is not None:
-            input_dims = set(input_dims)
-            assert input_dims.issubset({0, 1, 2, 3}), (
-                'input_dims should be a subset of {0, 1, 2, 3}'
-            )
-        loaded = np.load(data_path)
-        inputs = loaded[which_set + '_inputs']
-        if input_dims is not None:
-            inputs = inputs[:, input_dims]
-        targets = loaded[which_set + '_targets']
-        super(CCPPDataProvider, self).__init__(
-            inputs, targets, batch_size, max_num_batches, shuffle_order, rng)
+        inputs_batch, targets_batch = super(AudioDataProvider, self).next()
+        return inputs_batch, targets_batch
 
 
 class AugmentedMNISTDataProvider(MNISTDataProvider):
