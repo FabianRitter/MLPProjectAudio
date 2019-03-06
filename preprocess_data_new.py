@@ -39,10 +39,10 @@ if args.params_preprocessing:
     else:
         type_training = params_ctrl.get('type_training')
     chunk = int(params_ctrl.get('chunk_size'))
-    path_to_metadata = '../datasets/FSDnoisy18k.meta/' + type_training + "_set.csv"
-    base_path = '../datasets/' + type_training
-    if type_training == 'val':
-    	base_path = '../datasets/train'
+    path_to_metadata = '/disk/scratch/s1870525/datasets/FSDnoisy18k.meta/' + type_training + "_set.csv"
+    base_path= '/disk/scratch/s1870525/datasets/' + type_training
+    if type_training == 'valid':
+    	base_path = '/disk/scratch/s1870525/datasets/train'
 
     hdf5_name = "processed_data_" + type_training  +  ".hdf5"
     print('base path is', base_path)
@@ -57,11 +57,12 @@ fname = df_train['fname'].values
 
 n_mels = 96
 fs= 32000 # we will make downsampling to save some data!!44100
-n_fft = 1024
+n_fft = 512
 windows_size_s = 35 # 30 milisecons windowing (to have more context)
 windows_size_f = (windows_size_s * fs ) // 1000  # int division # 960 samples
 hop_length_samples = int(windows_size_f // 2) ## 480 samples
-audio_duration = round(len(data) / fs,2)  # 2 seconds
+audio_duration_s = 1.45  # 2 seconds
+audio_duration = audio_duration_s * 1000
 number_of_frames = fs * audio_duration # deprecated, use short audio in database already
 fmax = int(fs / 2)
 fmin = 0

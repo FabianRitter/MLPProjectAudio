@@ -47,13 +47,16 @@ cd ..
 ##  SYnc data in the headnode  with the job's GPU BOX
 rsync -ua --progress /home/${STUDENT_ID}/ExperimentsAudio/data_short/ ${DATASET_DIR}/test
 rsync -ua --progress /home/${STUDENT_ID}/ExperimentsAudio/data_short_train/ ${DATASET_DIR}/train
-rsync -ua --progress /home/${STUDENT_ID}/ExperimentsAudio/data ${DATASET_DIR}
+rsync -ua --progress /home/${STUDENT_ID}/ExperimentsAudio/data/ ${DATASET_DIR}
 
 rsync -ua --progress /home/${STUDENT_ID}/ExperimentsAudio/MLPProjectAudio/ /disk/scratch/${STUDENT_ID}/MLPProjectAudio
 
-ls /home/${STUDENT_ID}/ExperimentsAudio/data/
 
 cd /disk/scratch/${STUDENT_ID}
+cd datasets/FSDnoisy18k.meta
+ls
+pwd
+cd ../..
 cd MLPProjectAudio
 pwd
 echo databse directory ${DATASET_DIR}
