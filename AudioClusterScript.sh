@@ -26,7 +26,8 @@ mkdir -p ${TMP}/datasets
 export DATASET_DIR=${TMP}/datasets/
 mkdir -p ${TMP}/MLPProjectAudio
 export CODE_DIR=${TMP}/MLPProjectAudio/
-
+mkdir -p ${DATASET_DIR}/train
+mkdir -p ${DATASET_DIR}/test
 
 if [ $# != 1 ]; then
 echo "Usage: sbatch AudioClusterScript.sh <experiment_number>"
@@ -44,7 +45,9 @@ cd ..
 
 
 ##  SYnc data in the headnode  with the job's GPU BOX
-rsync -ua --progress /home/${STUDENT_ID}/ExperimentsAudio/data/ ${DATASET_DIR}
+rsync -ua --progress /home/${STUDENT_ID}/ExperimentsAudio/data_short/ ${DATASET_DIR}/test
+rsync -ua --progress /home/${STUDENT_ID}/ExperimentsAudio/data_short_train/ ${DATASET_DIR}/train
+rsync -ua --progress /home/${STUDENT_ID}/ExperimentsAudio/data ${DATASET_DIR}
 
 rsync -ua --progress /home/${STUDENT_ID}/ExperimentsAudio/MLPProjectAudio/ /disk/scratch/${STUDENT_ID}/MLPProjectAudio
 
@@ -54,16 +57,15 @@ cd /disk/scratch/${STUDENT_ID}
 cd MLPProjectAudio
 pwd
 echo databse directory ${DATASET_DIR}
-#bash run_experiment_preprocessing.sh
-#mv ../datasets/newpreprocessing/processed_data_eval.hdf5 ../datasets
-#mv ../datasets/newpreprocessing/processed_data_test.hdf5 ../datasets
-#mv ../datasets/newpreprocessing/processed_data_train.hdf5 ../datasets
+bash run_experiment_preprocessing.sh
+
+
 echo entrando a python
 python MLP_CW2/mlp/pytorch_experiment_scripts/train_evaluate_emnist_classification_system.py --num_layers 5 --num_filters 12,24,48,48,24 --kernel_size 3 --batch_size 64 --use_gpu True --gpu_id "0,1,2,3" --use_cluster True --num_epochs 20 --training_instances 17310 --val_instances 275 --experiment_name exp_audio_${number}
 echo pase python
 
 # recovering data
-
+cp /disk/scratch/${STUDENT_ID}/datasets/processed_data_val.hdf5 /home/${STUDENT_ID}/ExperimentsAudio/data/
 cp /disk/scratch/${STUDENT_ID}/exp_audio_${number} /home/${STUDENT_ID}/ExperimentsAudio
 cp /disk/scratch/${STUDENT_ID}/datasets/exp_audio_${number} /home/${STUDENT_ID}/ExperimentsAudio
 cp /disk/scratch/${STUDENT_ID}/MLPProjectAudio/exp_audio_${number} /home/${STUDENT_ID}/ExperimentsAudio

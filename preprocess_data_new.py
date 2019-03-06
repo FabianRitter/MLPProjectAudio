@@ -39,7 +39,7 @@ if args.params_preprocessing:
     else:
         type_training = params_ctrl.get('type_training')
     chunk = int(params_ctrl.get('chunk_size'))
-    path_to_metadata = '../datasets/' + type_training + "_set.csv"
+    path_to_metadata = '../datasets/FSDnoisy18k.meta/' + type_training + "_set.csv"
     base_path = '../datasets/' + type_training
     if type_training == 'val':
     	base_path = '../datasets/train'
@@ -51,7 +51,6 @@ if args.experiment_number:
     experiment_number= int(args.experiment_number)
 else:
     experiment_number = False
-
 
 df_train = pd.read_csv(path_to_metadata)
 fname = df_train['fname'].values

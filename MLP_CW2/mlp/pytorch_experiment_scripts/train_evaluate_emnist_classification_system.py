@@ -1,6 +1,5 @@
 import sys
 import os
-#sys.path.append(os.path.abspath("/home/jordi/mlp_audio/MLPProjectAudio/MLP_CW2/mlp"))
 
 import mlp.data_providers as data_providers
 import numpy as np
@@ -22,15 +21,13 @@ num_filters = [int(filt) for filt in args.num_filters[0].split(",")]
 assert len(num_filters) == args.num_layers, "Not specified number of filter per each layer!"
 print(" first assert!!!! now reading data")
 
-
-
-train_data = data_providers.AudioDataProvider('train', batch_size=args.batch_size,
+train_data = data_providers.AudioDataProvider('valid', batch_size=args.batch_size,
                                                rng=rng,shuffle_order=False)  # initialize our rngs using the argument set seed
 print("train read")
 val_data = data_providers.AudioDataProvider('valid', batch_size=args.batch_size,
                                              rng=rng,shuffle_order=False)  # initialize our rngs using the argument set seed
 print("val ok")
-test_data = data_providers.AudioDataProvider('test', batch_size=args.batch_size,
+test_data = data_providers.AudioDataProvider('valid', batch_size=args.batch_size,
                                               rng=rng,shuffle_order=False)  # initialize our rngs using the argument set seed
 print("test ok")
 
