@@ -28,11 +28,7 @@ def convert2mel(audio,base_path,fs, n_fft,fmax,n_mels,hop_length_samples, window
 
     powSpectrum = np.abs(stft(data,n_fft,hop_length = hop_length_samples, win_length = window_lenght, window = 'hamming', center=True, pad_mode='reflect'))**2
 
-    mels = melspectrogram(y= None,n_fft=n_fft ,sr=fs ,S= powSpectrum, hop_length= hop_length_samples ,n_mels=n_mels,fmax=fmax , fmin = 0.0).T
-    #mel_normalized = (mels -  np.mean(mels, axis =0)) / np.amax(mels)
-    #if mel_normalized.max() > maximum_mel:
-    #    maximum_mel = mel_normalized.max()
-    #to make it to db... we can add a mfcc optional
+    mels = melspectrogram(y = None, n_fft = n_fft, sr = fs , S= powSpectrum, hop_length= hop_length_samples ,n_mels=n_mels,fmax=fmax , fmin = 0.0).T
     mels = librosa.core.power_to_db(mels, ref=np.min(mels))
     mels = mels / np.max(mels)
 

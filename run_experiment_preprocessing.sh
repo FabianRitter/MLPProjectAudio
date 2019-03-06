@@ -7,7 +7,7 @@ do
 done
 
 echo finished validation
-mv processed_data_val.hdf5 ../datasets
+mv processed_data_valid.hdf5 ../datasets
 
 #for experiment in {1..15}
 #do

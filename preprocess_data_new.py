@@ -57,7 +57,7 @@ fname = df_train['fname'].values
 
 n_mels = 96
 fs= 32000 # we will make downsampling to save some data!!44100
-n_fft = 512
+n_fft = 2048
 windows_size_s = 35 # 30 milisecons windowing (to have more context)
 windows_size_f = (windows_size_s * fs ) // 1000  # int division # 960 samples
 hop_length_samples = int(windows_size_f // 2) ## 480 samples
@@ -92,12 +92,11 @@ else:
 
 if experiment_number == 1:
     hdf5_store = h5py.File(hdf5_name, "w")
-    #all_inputs = hdf5_store.create_dataset("all_inputs-batch-" + experiment_number, (len(df_train['fname'].values),n_mels*number_of_frames), compression="gzip")
-    all_inputs = hdf5_store.create_dataset("all_inputs" , (len(df_train['fname'].values),1, n_mels ,audio_duration // hop_length_samples), chunks= (64 , 1 ,n_mels,audio_duration // hop_length_samples)   ,compression="gzip")
+    all_inputs = hdf5_store.create_dataset("all_inputs" , (len(df_train['fname'].values),1, n_mels ,83), chunks= (64 , 1 ,n_mels,83)   ,compression="gzip")
     dt = h5py.special_dtype(vlen=str)
     targets = hdf5_store.create_dataset("targets", data = df_train['label'].values, dtype=dt ,compression="gzip")
     data_processed = [convert2mel(audio,base_path,fs, n_fft,fmax,n_mels,hop_length_samples, windows_size_f) for ii,audio in enumerate(fname)]
-    all_inputs[chunk * (experiment_number-1) :chunk * experiment_number , 1 ] = data_processed
+    all_inputs[chunk * (experiment_number-1) :chunk * experiment_number , 0 ] = data_processed
 
     if type_training == 'train' or type_training == 'val':
         manually_verified = hdf5_store.create_dataset("manually_verified", dtype='i1' ,data = df_train['manually_verified'].values, compression="gzip")
@@ -107,8 +106,8 @@ else:
     hdf5_store = h5py.File(hdf5_name, "a")
     data_processed = [convert2mel(audio,base_path,fs, n_fft,fmax,n_mels,hop_length_samples, windows_size_f) for ii,audio in enumerate(fname)]
 
-    hdf5_store['all_inputs'][chunk * (experiment_number-1) :chunk * experiment_number,1] = data_processed
-print("maximum_mel is", maximum_mel)
+    hdf5_store['all_inputs'][chunk * (experiment_number-1) :chunk * experiment_number,0] = data_processed
+
 print("saving data for experiment" , experiment_number)
 
 

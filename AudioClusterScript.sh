@@ -60,7 +60,7 @@ cd ../..
 cd MLPProjectAudio
 pwd
 echo databse directory ${DATASET_DIR}
-bash run_experiment_preprocessing.sh
+#bash run_experiment_preprocessing.sh
 
 
 echo entrando a python
@@ -69,8 +69,6 @@ echo pase python
 
 # recovering data
 cp /disk/scratch/${STUDENT_ID}/datasets/processed_data_val.hdf5 /home/${STUDENT_ID}/ExperimentsAudio/data/
-cp /disk/scratch/${STUDENT_ID}/exp_audio_${number} /home/${STUDENT_ID}/ExperimentsAudio
-cp /disk/scratch/${STUDENT_ID}/datasets/exp_audio_${number} /home/${STUDENT_ID}/ExperimentsAudio
 cp /disk/scratch/${STUDENT_ID}/MLPProjectAudio/exp_audio_${number} /home/${STUDENT_ID}/ExperimentsAudio
 cp /disk/scratch/s1870525/datasets/experiment_config.txt /home/${STUDENT_ID}/ExpermentsAudio/exp_audio_${number}
 #cp /disk/scratch/${STUDENT_ID}/datasets/processed_data_val.hdf5 /home/${STUDENT_ID}/ExperimentsAudio/data/newpreprocessed
