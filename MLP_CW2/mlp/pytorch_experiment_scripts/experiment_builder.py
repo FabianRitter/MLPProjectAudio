@@ -260,11 +260,15 @@ class ExperimentBuilder(nn.Module):
             epoch_elapsed_time = time.time() - epoch_start_time  # calculate time taken for epoch
             epoch_elapsed_time = "{:.4f}".format(epoch_elapsed_time)
             print("Epoch {}:".format(epoch_idx), out_string, "epoch time", epoch_elapsed_time, "seconds")
+            self.state['current_epoch_idx'] = epoch_idx
+            self.state['best_val_model_acc'] = self.best_val_model_acc
+            self.state['best_val_model_idx'] = self.best_val_model_idx
             self.save_model(model_save_dir=self.experiment_saved_models,
                             # save model and best val idx and best val acc, using the model dir, model name and model idx
-                            model_save_name="train_model", model_idx=epoch_idx,
-                            best_validation_model_idx=self.best_val_model_idx,
-                            best_validation_model_acc=self.best_val_model_acc)
+                            model_save_name="train_model", model_idx=epoch_idx, state=self.state)
+            self.save_model(model_save_dir=self.experiment_saved_models,
+                            # save model and best val idx and best val acc, using the model dir, model name and model idx
+                            model_save_name="train_model", model_idx='latest', state=self.state)
 
         print("Generating test set evaluation metrics")
         self.load_model(model_save_dir=self.experiment_saved_models, model_idx=self.best_val_model_idx,
@@ -272,7 +276,6 @@ class ExperimentBuilder(nn.Module):
                         model_save_name="train_model")
         current_epoch_losses = {"test_acc": [], "test_loss": []}  # initialize a statistics dict
 
-        test_number_batches = int(math.ceil(self.test_instances/self.batch_size))
         with tqdm.tqdm(total=len(test_data)) as pbar_test:  # ini a progress bar
             for x,y in self.test_data:  # sample batch
                 #x,y = self.convert_h5_to_numpy(data = self.test_data,
