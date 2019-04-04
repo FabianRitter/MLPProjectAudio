@@ -1,5 +1,0 @@
-ctrl:
-  dataset_path: '../datasets'
-  type_training: 'valid'
-  chunk_size: '64'
-
